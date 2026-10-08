@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Onkel Ottos Testament</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏚️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/host.css">
+</head>
+<body class="host">
+
+  <!-- Start -->
+  <section id="scr-start" class="screen">
+    <div class="start-card">
+      <div class="crest"><div class="seal"><span>O</span></div></div>
+      <h1 class="display title" data-i="app.title"></h1>
+      <p class="tagline" data-i="app.tagline"></p>
+      <div class="start-lang">
+        <span data-i="h.chooseLang"></span>
+        <div class="lang-switch" data-langswitch>
+          <button data-lang="de">Deutsch</button><button data-lang="tr">Türkçe</button>
+        </div>
+      </div>
+      <button id="btn-create" class="btn big blood" data-i="h.create"></button>
+      <a class="rules-link" href="/regeln" target="_blank" rel="noopener" data-i="h.rulesLink"></a>
+    </div>
+  </section>
+
+  <!-- Lobby -->
+  <section id="scr-lobby" class="screen hidden">
+    <header class="lobby-head">
+      <h1 class="display" data-i="app.title"></h1>
+      <div class="tools" data-tools></div>
+    </header>
+    <div class="lobby-grid">
+      <div class="join-card parchment">
+        <h2 class="display" data-i="h.joinTitle"></h2>
+        <div class="qr-frame"><img id="qr" alt="QR"></div>
+        <p class="join-hint" data-i="h.joinScan"></p>
+        <p class="join-url" id="join-url"></p>
+        <div class="join-code"><span data-i="h.code"></span><b id="join-code" class="display"></b></div>
+        <p class="wifi" data-i="h.sameWifi"></p>
+      </div>
+      <div class="heirs-panel">
+        <div class="heirs-head">
+          <h2 class="display" data-i="h.heirs"></h2>
+          <span id="heir-count"></span>
+        </div>
+        <ul id="heir-list" class="heir-list"></ul>
+        <p id="heir-empty" class="heir-empty" data-i="h.noPlayers"></p>
+        <div class="lobby-controls">
+          <button id="btn-bot" class="btn ghosty"><span>🤖</span><span data-i="h.addBot"></span></button>
+          <label class="setting"><span data-i="h.rounds"></span>
+            <select id="set-rounds"><option>5</option><option>6</option><option>8</option><option>10</option><option>12</option></select>
+          </label>
+          <label class="setting"><span data-i="h.planTime"></span>
+            <select id="set-time"><option value="20">20</option><option value="25">25</option><option value="35">35</option><option value="45">45</option><option value="60">60</option></select>
+          </label>
+        </div>
+        <div class="unlocks">
+          <h3 data-i="h.unlocks"></h3>
+          <ul>
+            <li data-n="4"><span>👶</span><span data-i="h.unlock4"></span></li>
+            <li data-n="5"><span>🤵</span><span data-i="h.unlock5"></span></li>
+            <li data-n="6"><span>🐈‍⬛</span><span data-i="h.unlock6"></span></li>
+            <li data-n="9"><span>🕸️</span><span data-i="h.unlock9"></span></li>
+            <li data-n="10"><span>🌳</span><span data-i="h.unlock10"></span></li>
+          </ul>
+        </div>
+        <button id="btn-start" class="btn big blood start-btn"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spiel -->
+  <section id="scr-game" class="screen hidden">
+    <header class="topbar">
+      <div class="round-badge"><span class="seal"><span id="round-num">1</span></span><span id="round-label"></span></div>
+      <div class="clause-mini" id="clause-mini"></div>
+      <div class="topbar-right">
+        <div class="timer" id="timer"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="19"/><circle class="fg" id="timer-arc" cx="22" cy="22" r="19"/></svg><b id="timer-num"></b></div>
+        <div class="tools" data-tools></div>
+      </div>
+    </header>
+    <main class="game-main">
+      <div id="board">
+        <div id="villa" class="villa"></div>
+        <div id="hall" class="hall"><span data-i="g.hall"></span></div>
+        <div id="tokens"></div>
+      </div>
+      <aside class="ledger"><ol id="ledger"></ol></aside>
+    </main>
+    <div id="phase-banner" class="phase-banner hidden"></div>
+  </section>
+
+  <div id="overlay" class="overlay hidden"></div>
+  <div id="event-banner" class="event-banner"></div>
+  <div id="conn-lost" class="conn-lost hidden">⚡</div>
+
+  <script src="/shared/data.js"></script>
+  <script src="/shared/i18n.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/host.js"></script>
+</body>
+</html>

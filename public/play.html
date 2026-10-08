@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#13241d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Onkel Ottos Testament</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏚️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/play.css">
+</head>
+<body class="phone">
+
+  <!-- Beitreten -->
+  <section id="scr-join" class="pscreen">
+    <div class="join-top">
+      <div class="lang-switch" data-langswitch><button data-lang="de">Deutsch</button><button data-lang="tr">Türkçe</button></div>
+    </div>
+    <div class="join-hero">
+      <div class="seal hero-seal"><span>O</span></div>
+      <h1 class="display" data-i="app.title"></h1>
+    </div>
+    <form id="join-form" class="join-form parchment" autocomplete="off">
+      <label><span data-i="p.code"></span><input id="in-code" maxlength="4" autocapitalize="characters" spellcheck="false" inputmode="text"></label>
+      <label><span data-i="p.name"></span><input id="in-name" maxlength="14" spellcheck="false" enterkeyhint="go"></label>
+      <div class="av-label" data-i="p.avatar"></div>
+      <div id="av-grid" class="av-grid"></div>
+      <p id="join-err" class="join-err" role="alert"></p>
+      <button class="btn big blood" type="submit" id="btn-join" data-i="p.join"></button>
+    </form>
+  </section>
+
+  <!-- Spiel -->
+  <section id="scr-game" class="pscreen hidden">
+    <header class="phead">
+      <button class="me-btn" id="me-btn">
+        <span id="me-medal"></span>
+        <span class="me-text"><b id="me-name"></b><span id="me-money" class="money"></span></span>
+      </button>
+      <div class="phead-right">
+        <div class="lang-switch small" data-langswitch><button data-lang="de">DE</button><button data-lang="tr">TR</button></div>
+        <button class="dossier-btn" id="dossier-btn" aria-label="Dossier">📂</button>
+      </div>
+    </header>
+    <div class="pbar" id="pbar"><div id="pbar-fill"></div></div>
+    <main id="view" class="view"></main>
+  </section>
+
+  <!-- Auswahl-Blatt -->
+  <div id="sheet" class="sheet hidden">
+    <div class="sheet-back" data-close></div>
+    <div class="sheet-body parchment" id="sheet-body"></div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <div id="conn" class="conn hidden" data-i="err.conn"></div>
+
+  <script src="/shared/data.js"></script>
+  <script src="/shared/i18n.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/play.js"></script>
+</body>
+</html>

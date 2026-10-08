@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Onkel Ottos Testament</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏚️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    main { position: relative; z-index: 2; min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; text-align: center; }
+    .seal { font-size: 6rem; margin: 0 auto 1rem; transform: rotate(-8deg); }
+    h1 { font-size: clamp(2.6rem, 7vw, 5.5rem); line-height: .95; margin: 0; color: var(--parch); text-shadow: 0 2px 0 var(--brass-dk), 0 8px 30px rgba(0,0,0,.6); }
+    p.tag { color: var(--text-dim); font-size: 1.2rem; margin: 1rem auto 2.4rem; max-width: 34rem; }
+    .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.2rem; max-width: 46rem; margin: 0 auto; }
+    .choice { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: 1.6rem 1.2rem; text-decoration: none; color: var(--ink); transition: transform .2s var(--ease-bounce); }
+    .choice:hover { transform: translateY(-4px) rotate(-1deg); }
+    .choice .e { font-size: 3.4rem; }
+    .choice b { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; }
+    .choice span { color: var(--ink-soft); line-height: 1.35; }
+    .foot { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; align-items: center; }
+    .foot a { color: var(--brass); }
+  </style>
+</head>
+<body>
+  <main>
+    <div>
+      <div class="seal"><span>O</span></div>
+      <h1 class="display" data-t="title"></h1>
+      <p class="tag" data-t="tag"></p>
+      <div class="choices">
+        <a class="choice parchment" href="/host"><span class="e">📺</span><b data-t="tv"></b><span data-t="tvd"></span></a>
+        <a class="choice parchment" href="/play"><span class="e">📱</span><b data-t="ph"></b><span data-t="phd"></span></a>
+      </div>
+      <div class="foot">
+        <a href="/regeln" data-t="rules"></a>
+        <div class="lang-switch"><button data-lang="de">Deutsch</button><button data-lang="tr">Türkçe</button></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    const T = {
+      de: { title: 'Onkel Ottos Testament', tag: 'Ein chaotisches Erbschaftsspiel für 2 bis 15 gierige Verwandte. Ein Bildschirm für alle, ein Handy pro Person.',
+        tv: 'Spiel eröffnen', tvd: 'Auf dem Fernseher oder Laptop, den alle sehen können.', ph: 'Mitspielen', phd: 'Auf deinem Handy, mit dem Code vom Fernseher.', rules: 'Regelwerk lesen' },
+      tr: { title: "Otto Amca'nın Vasiyeti", tag: '2 ile 15 açgözlü akraba için kaotik bir miras oyunu. Herkes için bir ekran, kişi başı bir telefon.',
+        tv: 'Oyunu aç', tvd: 'Herkesin görebileceği televizyonda ya da dizüstü bilgisayarda.', ph: 'Oyna', phd: 'Kendi telefonunda, televizyondaki kodla.', rules: 'Kuralları oku' }
+    };
+    let lang = localStorage.getItem('otto.lang') === 'tr' ? 'tr' : 'de';
+    function apply() {
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-t]').forEach(el => el.textContent = T[lang][el.dataset.t]);
+      document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+      document.title = T[lang].title;
+    }
+    document.addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b) { lang = b.dataset.lang; localStorage.setItem('otto.lang', lang); apply(); } });
+    apply();
+  </script>
+</body>
+</html>
