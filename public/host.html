@@ -67,6 +67,8 @@
             <li data-n="4"><span>👶</span><span data-i="h.unlock4"></span></li>
             <li data-n="5"><span>🤵</span><span data-i="h.unlock5"></span></li>
             <li data-n="6"><span>🐈‍⬛</span><span data-i="h.unlock6"></span></li>
+            <li data-n="7"><span>🔮</span><span data-i="h.unlock7"></span></li>
+            <li data-n="8"><span>🤡</span><span data-i="h.unlock8"></span></li>
             <li data-n="9"><span>🕸️</span><span data-i="h.unlock9"></span></li>
             <li data-n="10"><span>🌳</span><span data-i="h.unlock10"></span></li>
           </ul>
@@ -99,6 +101,30 @@
 
   <div id="overlay" class="overlay hidden"></div>
   <div id="event-banner" class="event-banner"></div>
+  <div id="whispers" class="whispers"></div>
+
+  <!-- Sitzung beenden: Sicherheitsabfrage -->
+  <div id="end-confirm" class="end-confirm hidden" role="dialog" aria-modal="true">
+    <div class="end-box parchment">
+      <div class="end-ico">🚪</div>
+      <p data-i="h.endConfirm"></p>
+      <div class="end-actions">
+        <button class="btn ghosty dark" id="end-no" data-i="h.endNo"></button>
+        <button class="btn blood" id="end-yes" data-i="h.endYes"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sitzung beendet -->
+  <section id="scr-ended" class="screen ended hidden">
+    <div class="ended-inner">
+      <div class="seal ended-seal"><span>O</span></div>
+      <h1 class="display" data-i="h.ended"></h1>
+      <p class="ended-sub" data-i="h.endedSub"></p>
+      <ol id="ended-list" class="ended-list"></ol>
+      <button class="btn big blood" id="btn-new-session" data-i="h.newSession"></button>
+    </div>
+  </section>
   <div id="conn-lost" class="conn-lost hidden">⚡</div>
 
   <script src="/shared/data.js"></script>

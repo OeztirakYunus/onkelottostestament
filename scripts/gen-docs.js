@@ -14,17 +14,17 @@ function kind(fx, lang) {
   if (fx.vote != null) return k.vote;
   if (fx.now) return k.now;
   if (fx.after) return k.after;
-  if (fx.game || fx.duelAll || fx.reverseDuel || fx.bedroomTwo) return k.duel;
-  if (fx.noCards || fx.maxCards || fx.thiefMult) return k.card;
+  if (fx.game || fx.duelAll || fx.reverseDuel || fx.bedroomTwo || fx.noDuels) return k.duel;
+  if (fx.noCards || fx.maxCards || fx.thiefMult || fx.extMult || fx.gardenUnsafe) return k.card;
   return k.room;
 }
 
-let md = '# Die 50 Testamentsklauseln · 50 Vasiyet Maddesi\n\n';
+let md = '# Die 100 Testamentsklauseln · 100 Vasiyet Maddesi\n\n';
 md += '*Diese Datei wird automatisch aus dem Spiel erzeugt (`npm run docs`). · Bu dosya oyundan otomatik olarak üretilir.*\n\n';
-md += 'Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel Nr. 50. Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt).\n\n';
-md += 'Noter her tur rastgele bir madde çeker. Son turda her zaman 50 numaralı madde okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa).\n\n';
+md += 'Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel „Letzte Klausel“ (Nr. 100). Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt).\n\n';
+md += 'Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (100 numara) okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa).\n\n';
 md += '| Nr. | Art | Klausel (Deutsch) | Tür | Madde (Türkçe) |\n|---|---|---|---|---|\n';
-D.CLAUSES.forEach((c, i) => {
+[...D.CLAUSES.filter(c => !c.fx.final), ...D.CLAUSES.filter(c => c.fx.final)].forEach((c, i) => {
   const de = I.t('de', 'clause.' + c.id), tr = I.t('tr', 'clause.' + c.id);
   md += `| ${i + 1} | ${kind(c.fx, 'de')} | ${de} | ${kind(c.fx, 'tr')} | ${tr} |\n`;
 });

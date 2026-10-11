@@ -20,7 +20,7 @@ Vasiyetin açılışından sonra en büyük servete sahip olan konağın sahibi 
 2. Tarayıcıda `http://localhost:3000` adresini aç ve **„Oyunu aç“** seç. Bu ekranı mümkünse televizyona yansıt.
 3. Noterin dilini seç (Deutsch ya da Türkçe) ve **„Vasiyeti aç“** düğmesine bas.
 4. Herkes telefonuyla **QR kodu** tarar ya da gösterilen adresi ve dört harfli **oda kodunu** girer.
-5. İsim ve yüz seç, katıl. Her telefon kendi dilini seçebilir.
+5. İsmini gir, kendinin bir **portre fotoğrafını** çek („Yağlı boya“ ya da „Hayalet“ gibi filtrelerle) ve katıl. Fotoğraf istemeyen bir hayvan yüzü seçer. Her telefon kendi dilini seçebilir.
 6. İsteğe bağlı: **Bot akraba** ekle (2–3 kişide çok işe yarar), **tur sayısını** ve **plan süresini** ayarla.
 7. **„Oyunu başlat“** düğmesine bas.
 
@@ -55,15 +55,13 @@ Geri sayım bitene kadar plan değiştirilebilir. Hiçbir şey seçmeyen bahçey
 
 Tüm figürler aynı anda odalarına yürür. Ardından oynanan kartlar bu **sabit sırayla** uygulanır:
 
-1. Avukatım! (koruma)
-2. Sahte Vasiyet
-3. Şerit
-4. Elektrik Kesintisi
-5. Yem
-6. Muz Kabuğu
-7. Yankesici
-8. Şantaj
-9. Zehirli Hediye
+1. Avukatım! (koruma) ve Sahte Vasiyet
+2. Şerit, Koku Bombası
+3. Elektrik Kesintisi, Yemek Zili
+4. Yem, Taklitçi, Yer Değiştir, Muz Kabuğu
+5. Yankesici, Avukat Faturası, Para Mıknatısı, Kart Hırsızı, Paparazzi, Uyku İlacı, Şarap Tadımı
+6. Şantaj, Zehirli Hediye
+7. Lanet, Zar, Miras Avcısı, Dört Yapraklı Yonca, Parti Düdüğü
 
 ### 4. Aile kavgası (düello)
 
@@ -72,7 +70,7 @@ Birden fazla mirasçı karşılaşırsa kavga çıkar:
 - **Kasa odasında iki kişi** ganimet için düello yapar.
 - **Yatak odasında iki veya daha fazla kişi** miras eşyası için düello yapar.
 
-Tüm düellocular telefonda **aynı anda aynı mini oyunu** oynar. Sonuç oda oda değerlendirilir.
+Tüm düellocular telefonda **aynı anda aynı mini oyunu** oynar. Sonuç oda oda değerlendirilir. „Alarm tembel“ maddesinde kasa için üç kişi de kavga edebilir.
 
 ### 5. Hesaplaşma
 
@@ -108,6 +106,21 @@ Her oda ödemesini yapar (aşağıdaki tabloya bakın). Ardından dağılıma ba
 | 🚧 **Şerit** | Bir odayı kapat (bahçe hariç). Oradakiler bahçeye atılır. |
 | 🎁 **Zehirli Hediye** | Hedefe **rastgele bir miras eşyanı** hediye et. Lanetli mi? Kimse bilmiyor! |
 | 💼 **Şantaj** | Odandaki diğer herkesten **30** al. |
+| 🔄 **Yer Değiştir** | Hedefinle odanızı değiştirirsiniz. |
+| 🧲 **Para Mıknatısı** | **Diğer her** mirasçıdan **10** Altın çek (korunanlardan ve bahçedekilerden hariç). |
+| 🍀 **Dört Yapraklı Yonca** | **Bodrumda** büyük ikramiye (+180) garanti. Değilse +40 alırsın. |
+| 💤 **Uyku İlacı** | Hedefin turu uyuyarak geçirir ve **odada hiçbir şey kazanmaz**. |
+| 🧾 **Avukat Faturası** | Hedefin sana servetinin **%10** kadarını öder (en az 20). |
+| 🐒 **Taklitçi** | Hedefini **onun** odasına kadar takip edersin. Kasayı ona zehir etmek için ideal. |
+| 🎲 **Zar** | Yarı yarıya: **+120** ya da **−60**. |
+| 🔔 **Yemek Zili** | **Diğer herkes** mutfağa koşar (mutfak kapalıysa bahçeye). Sadece sen yerinde kalırsın. |
+| 🕯️ **Lanet** | Seçilen odadaki herkes **40** kaybeder. Oradaysan sen de! |
+| 🎺 **Parti Düdüğü** | Odandaki diğer her mirasçı için **+25**. |
+| 📸 **Paparazzi** | Hedefinin **rolünü** gizlice öğrenirsin. |
+| 🐍 **Kart Hırsızı** | Hedefinden rastgele bir kart çal. |
+| 🍷 **Şarap Tadımı** | Hedefin çakırkeyif olur ve **bu tur her düelloyu kaybeder**. |
+| 💨 **Koku Bombası** | Seçilen odadaki herkes rastgele başka odalara kaçar. |
+| 🏺 **Miras Avcısı** | **80** öde ve hemen gizli bir miras eşyası al. İyi mi, lanetli mi? |
 
 ## Gizli roller
 
@@ -119,8 +132,10 @@ Başlangıçta herkes telefonunda gizlice bir rol alır. Kimse başkasının tel
 | 👶 **Gayrimeşru Çocuk** | 4 oyuncu | Sonunda **yakalanmazsan** servetine **%50** bonus alırsın. |
 | 🤵 **Uşak** | 5 oyuncu | Sonunda **yakalanmazsan** diğer herkesin servetinin **%15**'ini çalarsın. |
 | 🐈‍⬛ **Otto'nun Kedisi** | 6 oyuncu | **9 can:** Sana karşı oynanan ilk **3 kart** seker. Sonunda **en fakir** sen olursan **+400** mama parası alırsın. |
+| 🔮 **Falcı** | 7 oyuncu | Kristal küren sana **her tur gizlice başka birinin rolünü** gösterir. Finalde her doğru tahminin +80 yerine **+200** getirir. |
+| 🤡 **Aile Soytarısı** | 8 oyuncu | Bir **oylamada** seçilirsen her **ceza bonusa** dönüşür (her bonus da iki katına çıkar). Finalde aile seni çoğunlukla **uşak** ya da **çocuk** sanırsa her biri için **+250** kazanırsın. Yani: şüpheli davran! |
 
-Rollerle ilgili ipuçları **kütüphanede**, „Noter fısıldıyor“ maddesinde ve kartlar birinin üzerinden „sektiğinde“ (Miyav?) ortaya çıkar.
+Rollerle ilgili ipuçları **kütüphanede**, **falcıda**, „Noter fısıldıyor“, „Babalık testi“ ya da „Miyav?“ gibi maddelerde ve kartlar birinin üzerinden „sektiğinde“ ortaya çıkar.
 
 ## Miras eşyaları
 
@@ -145,19 +160,31 @@ Yatak odasında altın cep saatinden ürkütücü bebeğe kadar 20 miras eşyas�
 | 🤠 **Silahşör** | Ekran yeşil olunca dokun. Erken dokunan elenir. | En hızlı tepki |
 | 🤔 **Tahmin Sorusu** | Bir sayı tahmin et (örneğin Eyfel Kulesi'nin yüksekliği). | En yakın tahmin |
 | ⏱️ **Otto'nun Cep Saati** | Saati başlat ve tam 5,00 saniyede durdur. 2 saniye sonra saat görünmez olur. | 5,00 sn'ye en yakın |
+| 🧠 **Otto'nun Hafızası** | Renk sırasını aklında tut ve tekrarla. Her tur uzar. Tek hata oyunu bitirir. | En uzun sıra |
+| 🧮 **Mali Müşavir** | 15 saniyede olabildiğince çok işlem çöz (dört şık). | En çok doğru |
+| 🎈 **Balon** | Balonu şişir ve zamanında parayı al. Patlarsa elin boş kalır. Herkesin balonu aynıdır. | Patlatmadan en çok pompa |
+| 🎨 **Renk Kaosu** | Mavi renkle „KIRMIZI“ yazıyor: Kelimenin değil **yazının rengine** dokun. Hata bir puan götürür. | En çok puan |
+| 🔨 **Akrabaya Vur** | Deliklerden çıkan akrabalara vur. Otto'nun kedisi 2 puan götürür. | En çok puan |
+| 🪙 **Altın Say** | Bir yığın altın 3 saniyeliğine görünür. Kaç taneydi? | En yakın tahmin |
+| 🔐 **Kasayı Kır** | 1 ile 100 arasındaki sayıyı bul. Her tahminden sonra „daha büyük“ ya da „daha küçük“ yazar. | En az deneme |
+| 🔍 **Farklı Olanı Bul** | Izgarada bir resim diğerlerinden farklı. Olabildiğince çok bul. | En çok isabet |
+| ⬆️ **Ok Yağmuru** | Okun yönüne dokun. Ok **kırmızıysa** **ters yöne** dokun! | En çok puan |
+| 🤑 **Açgözlü** | 1 ile 10 arasında bir sayı seç. **Sadece bir kişinin seçtiği en yüksek sayı** kazanır. Aynı sayılar birbirini götürür. | En yüksek tek sayı |
 
-„Ters dünya“ maddesi her şeyi tersine çevirir: O zaman en kötü olan kazanır.
+„Ters dünya“ maddesi her şeyi tersine çevirir: O zaman en kötü olan kazanır. Bazı maddeler mini oyunu belirler (bilgi yarışması, dokunma ateşi, panayır, hafıza antrenmanı, vergi denetimi).
 
 ## Vasiyetin açılışı (final)
 
 Son turdan sonra:
 
-1. **Son şüphe:** Herkes gizlice **uşağın** ve **gayrimeşru çocuğun** kim olduğunu oylar (bu roller varsa). Her doğru tahmin **+80** getirir.
+1. **Son şüphe:** Herkes gizlice **uşağın** ve **gayrimeşru çocuğun** kim olduğunu oylar (bu roller varsa). Her doğru tahmin **+80** getirir (falcıya **+200**).
 2. Her oyuncunun **miras eşyaları** değerlenir. Lanetli eşyalar para kaybettirir.
 3. **Uşak ve çocuk** açıklanır. Aile en çok oyla doğru kişiyi seçtiyse rol **yakalanmış** olur. Yoksa bonusu işler.
-4. **Kedi** açıklanır. En fakir oyuncuysa +400 alır.
-5. **Aile kollarında** en zengin ailenin her üyesi +100 alır.
-6. **Tüm roller** açılır ve ardından **kürsü** gelir.
+4. **Falcı** isabetleriyle birlikte açıklanır.
+5. **Aile soytarısı** açıklanır. Çoğunluğun ondan şüphelendiği her soru için +250 alır.
+6. **Kedi** açıklanır. En fakir oyuncuysa +400 alır.
+7. **Aile kollarında** en zengin ailenin her üyesi +100 alır.
+8. **Tüm roller** açılır ve ardından **kürsü** gelir.
 
 ## Oyuncu sayısı: 2–15
 
@@ -166,16 +193,35 @@ Son turdan sonra:
 | 2–3 | Sadece açgözlü akrabalar. İpucu: Konak dolsun diye bot akraba ekleyin. |
 | 4 | Bir **gayrimeşru çocuk** oyunda. |
 | 5 | Ayrıca bir **uşak**. |
-| 6–8 | Ayrıca **Otto'nun kedisi**. Standart oyun. |
+| 6 | Ayrıca **Otto'nun kedisi**. |
+| 7 | Ayrıca **falcı**. |
+| 8 | Ayrıca **aile soytarısı**. Buradan itibaren altı rolün hepsi oyunda. |
 | 9 | Konağa **tavan arası** ve **balo salonu** eklenir (8 oda). |
 | 10–15 | **Aile kolları**: yaklaşık 3 kişilik takımlar. Herkes kendisi için oynar ama en zengin aile sonunda bonus alır. Aile üyeleri dosyanda yazar. |
+
+## Gizli mesajlar (sohbet)
+
+Telefondaki **💬** düğmesiyle herkes herkese **özel** mesaj yazabilir: ittifak kur, yalan söyle, tehdit et, rüşvet ver. **Aile kollarında** (10 oyuncudan itibaren) sadece kendi ailenin okuyabildiği bir **aile sohbeti** de vardır.
+
+Televizyon **mesajların içeriğini asla göstermez**, ama **fısıldaşıldığını** belli eder: „Elif, Murat kişisinin kulağına bir şey fısıldıyor…“. Bu da güvensizliği garanti eder. Bot akrabalar da cevap verir, ama pek işe yarar şeyler söylemezler.
+
+## Bot akrabalar
+
+Botların adları örneğin **Ayşe Teyze**, **Mehmet Amca** ya da **Hüseyin Dede**. Boş yerleri doldururlar ama odalarını oldukça plansız seçerler, sadece arada bir kart oynarlar ve mini oyunlarda vasattırlar. Alıştırma için ideal, herkes yenebilir.
+
+## Müzik, ses efektleri ve noterin sesi
+
+- **Müzik 🎵:** Lobi (ürkütücü vals), plan (sinsi müzik), düello (dörtnala) ve final (fanfar) için özel parçalar. Televizyonda çalar ve noter konuşunca kısılır.
+- **Ses efektleri 🔊:** Her kartın kendi sesi var: muz kabuğunda kayma düdüğü, avukatta tokmak, şeritte bant sesi, şantajda yazar kasa, kedide „miyav“, bodrumda merdivenden düşme, bozuk yemekte geğirme ve daha fazlası.
+- **Noterin sesi 🗣️:** Noter doğal bir sesle konuşur (Almanca ve Türkçe). Cümleler oyunun içinde ses dosyası olarak kayıtlıdır, bu yüzden **her tarayıcıda**, internetsiz de çalışır. Üçü de televizyonun sağ üst köşesinden ayrı ayrı kapatılabilir.
 
 ## Ayarlar
 
 - **Tur:** 5, 6, 8, 10 veya 12.
 - **Plan süresi:** 20 ile 60 saniye.
-- **Noter sesi:** Televizyon maddeleri sesli okur (tarayıcının konuşma özelliğini kullanır).
+- **Müzik, ses, noter sesi:** ayrı ayrı açılıp kapatılabilir (🎵 🔊 🗣️).
 - **Geç ⏭:** Mevcut bekleme süresini atlar.
+- **Oturumu bitir 🚪:** Bir onaydan sonra oyunu herkes için hemen bitirir. Televizyon ve telefonlar son durumu gösterir, ardından yeni bir oturum açılabilir.
 - **Tam ekran ⛶** televizyon için.
 
 ## Strateji ipuçları
@@ -187,7 +233,10 @@ Son turdan sonra:
 - **Kütüphane finali kazandırır.** Rolleri bilen doğru tahmin eder ve uşakla çocuğu durdurur.
 - **Kedi olarak:** Fakir görün. Bilerek kaybet ve sonunda 400'ü cebe at.
 - **Uşak olarak:** Göze batma. Çok yüksek sesle suçlayan şüphe çeker.
+- **Soytarı olarak:** Gürültücü, şüpheli ve utandırıcı ol. Ne kadar çok seçilirsen o kadar iyi.
+- **Falcı olarak:** Bildiklerini erkenden açık etme. Yoksa hedef olursun.
+- **Sohbeti kullan:** Kasa için gizli bir ittifak altın değerinde. Dayanıp dayanmayacağı ayrı bir soru.
 
-## 50 vasiyet maddesi
+## 100 vasiyet maddesi
 
 Tam liste **KLAUSELN.md** dosyasında ve tarayıcıda `http://localhost:3000/regeln` adresindeki kurallarda yer alıyor.

@@ -1,10 +1,10 @@
-# Die 50 Testamentsklauseln · 50 Vasiyet Maddesi
+# Die 100 Testamentsklauseln · 100 Vasiyet Maddesi
 
 *Diese Datei wird automatisch aus dem Spiel erzeugt (`npm run docs`). · Bu dosya oyundan otomatik olarak üretilir.*
 
-Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel Nr. 50. Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt).
+Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel „Letzte Klausel“ (Nr. 100). Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt).
 
-Noter her tur rastgele bir madde çeker. Son turda her zaman 50 numaralı madde okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa).
+Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (100 numara) okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa).
 
 | Nr. | Art | Klausel (Deutsch) | Tür | Madde (Türkçe) |
 |---|---|---|---|---|
@@ -15,7 +15,7 @@ Noter her tur rastgele bir madde çeker. Son turda her zaman 50 numaralı madde 
 | 5 | Sofort | Mitleidsklausel: Der ärmste Verwandte bekommt 150 Taler. | Anında | Acıma maddesi: En fakir akraba 150 Altın alıyor. |
 | 6 | Karten | Ottos Anwalt schläft. Diese Runde sind keine Karten erlaubt! | Kartlar | Otto'nun avukatı uyuyor. Bu tur kart oynamak yasak! |
 | 7 | Sofort | Weihnachten im Oktober: Jeder bekommt eine Karte geschenkt. | Anında | Ekimde yılbaşı: Herkese bir kart hediye. |
-| 8 | Sofort | Reise nach Jerusalem: Alle geben ihre Karten an den linken Nachbarn weiter. | Anında | Sandalye kapmaca: Herkes kartlarını soldaki komşuya veriyor. |
+| 8 | Sofort | Reise nach Palästina: Alle geben ihre Karten an den linken Nachbarn weiter. | Anında | Sandalye kapmaca: Herkes kartlarını soldaki komşuya veriyor. |
 | 9 | Nach der Runde | Einsamkeitsbonus: Wer allein in einem Raum steht, bekommt 70 Taler. | Tur sonunda | Yalnızlık bonusu: Bir odada tek başına kalan 70 Altın alıyor. |
 | 10 | Nach der Runde | Gedränge ist unhöflich: Wer in einem Raum mit 3 oder mehr Leuten steht, zahlt 40. | Tur sonunda | İzdiham kabalıktır: 3 veya daha fazla kişinin olduğu bir odadaki herkes 40 öder. |
 | 11 | Räume | Der Keller ist launisch: Gewinne und Verluste im Keller verdoppeln sich. | Odalar | Bodrumun keyfi kaçık: Bodrumdaki kazanç ve kayıplar iki katına çıkıyor. |
@@ -57,4 +57,54 @@ Noter her tur rastgele bir madde çeker. Son turda her zaman 50 numaralı madde 
 | 47 | Nach der Runde | Ehrlichkeitsbonus: Wer diese Runde keine Karte spielt, bekommt 50. | Tur sonunda | Dürüstlük bonusu: Bu tur kart oynamayan herkes 50 alıyor. |
 | 48 | Sofort | Trostpreis: Die zwei Ärmsten ziehen je zwei Karten. | Anında | Teselli ödülü: En fakir iki kişi ikişer kart çekiyor. |
 | 49 | Räume | Spiegelklausel: Alle Raum-Einnahmen gehen an den rechten Nachbarn! | Odalar | Ayna maddesi: Tüm oda kazançları sağdaki komşuya gidiyor! |
-| 50 | Finale | Letzte Klausel: Alle Räume zahlen dreifach. Danach wird das Testament eröffnet! | Final | Son madde: Tüm odalar üç kat ödüyor. Ardından vasiyet açılıyor! |
+| 50 | Sofort | Oma hat Kuchen gebacken: Jeder bekommt 30 Taler Trostgeld für die Kalorien. | Anında | Babaanne kek yaptı: Kalorilerin tesellisi olarak herkes 30 Altın alıyor. |
+| 51 | Sofort | Otto hat ein Rubbellos hinterlassen. Ein zufälliger Erbe gewinnt sofort 200 Taler. | Anında | Otto bir kazı kazan bırakmış. Rastgele bir mirasçı hemen 200 Altın kazanıyor. |
+| 52 | Sofort | Überraschung! Ein zufälliger Erbe hat heute Geburtstag. Alle anderen schenken ihm 20 Taler. | Anında | Sürpriz! Rastgele bir mirasçının bugün doğum günü. Diğer herkes ona 20 Altın hediye ediyor. |
+| 53 | Sofort | Ottos Katze hat Karten gefressen: Jeder verliert eine zufällige Karte. | Anında | Otto'nun kedisi kartları yemiş: Herkes rastgele bir kartını kaybediyor. |
+| 54 | Sofort | Pfandhaus-Klausel: Alle Karten werden sofort für je 25 Taler verkauft. | Anında | Rehinci maddesi: Tüm kartlar hemen tanesi 25 Altından satılıyor. |
+| 55 | Sofort | Kartensturm! Alle Karten werden eingesammelt, gemischt und neu verteilt. | Anında | Kart fırtınası! Tüm kartlar toplanıyor, karıştırılıyor ve yeniden dağıtılıyor. |
+| 56 | Sofort | Der Notar verplappert sich und verrät einen garantiert unschuldigen Verwandten. | Anında | Noterin ağzından kaçtı: Kesinlikle masum olan bir akrabayı açıklıyor. |
+| 57 | Sofort | Miau? Ottos Katze versteckt sich unter einem dieser drei Erben. | Anında | Miyav? Otto'nun kedisi bu üç mirasçıdan birinin arasında saklanıyor. |
+| 58 | Sofort | Ein Vaterschaftstest ist aufgetaucht: Das uneheliche Kind ist einer von diesen dreien. | Anında | Bir babalık testi ortaya çıktı: Gayrimeşru çocuk bu üç kişiden biri. |
+| 59 | Sofort | Jemand hat eine rote Nase verloren: Der Familienclown ist einer von diesen dreien. | Anında | Biri kırmızı burnunu düşürmüş: Aile soytarısı bu üç kişiden biri. |
+| 60 | Sofort | Verwechslung im Notariat: Zwei zufällige Erben tauschen ihr Vermögen. | Anında | Noterlikte karışıklık: Rastgele iki mirasçı servetlerini değiş tokuş ediyor. |
+| 61 | Sofort | Familienfrieden: Jedes Vermögen rückt ein Viertel näher an den Durchschnitt. | Anında | Aile barışı: Her servet ortalamaya dörtte bir yaklaşıyor. |
+| 62 | Sofort | Mitleid mit dem Ärmsten: Er bekommt sofort ein zufälliges Erbstück. | Anında | En fakire acıma: Hemen rastgele bir miras eşyası alıyor. |
+| 63 | Sofort | Kleinsparer-Prämie: Wer weniger als 200 Taler hat, bekommt 100. | Anında | Küçük tasarruf primi: 200 Altından azı olan herkes 100 alıyor. |
+| 64 | Räume | Der Tresor ist leer! Otto hat alles in seinen Socken versteckt. Der Tresor zahlt nichts. | Odalar | Kasa boş! Otto her şeyi çoraplarına saklamış. Kasa hiçbir şey ödemiyor. |
+| 65 | Räume | Festmahl! Wer in die Küche geht, bekommt 60 Taler und eine Karte. | Odalar | Ziyafet! Mutfağa giden herkes 60 Altın ve bir kart alıyor. |
+| 66 | Räume | Der Keller wurde aufgeräumt: Diese Runde verliert dort niemand Geld. | Odalar | Bodrum temizlendi: Bu tur orada kimse para kaybetmiyor. |
+| 67 | Räume | Die Alarmanlage ist faul: Sie geht erst ab 4 Personen los. Bis dahin wird um den Tresor gestritten. | Odalar | Alarm tembel: Ancak 4 kişiden itibaren çalıyor. O zamana kadar kasa için kavga edilir. |
+| 68 | Räume | Geisterstunde: Geister spuken diese Runde doppelt so stark. | Odalar | Hayaletler saati: Hayaletler bu tur iki kat güçlü musallat oluyor. |
+| 69 | Duelle | Waffenstillstand: Keine Duelle. Im Tresor wird geteilt, im Schlafzimmer entscheidet das Los. | Düellolar | Ateşkes: Düello yok. Kasada paylaşılıyor, yatak odasında kura belirliyor. |
+| 70 | Räume | Klatsch und Tratsch: In der Bibliothek erfährst du heute zwei Rollen. | Odalar | Dedikodu: Bugün kütüphanede iki rol öğreniyorsun. |
+| 71 | Karten | Erpresser-Saison: Erpressung bringt doppelt so viel. | Kartlar | Şantaj mevsimi: Şantaj iki kat getiriyor. |
+| 72 | Karten | Der Gartenzaun ist kaputt: Der Garten schützt diese Runde nicht vor Karten. | Kartlar | Bahçe çiti kırık: Bahçe bu tur kartlara karşı korumuyor. |
+| 73 | Karten | Kartenchaos: Diese Runde darf jeder bis zu drei Karten spielen! | Kartlar | Kart kaosu: Bu tur herkes üç karta kadar oynayabilir! |
+| 74 | Duelle | Jahrmarkt im Garten: Alle Duelle sind Luftballon-Duelle. | Düellolar | Bahçede panayır: Tüm düellolar balon düellosu. |
+| 75 | Duelle | Gedächtnistraining: Alle Duelle sind Merkspiele. | Düellolar | Hafıza antrenmanı: Tüm düellolar hafıza oyunu. |
+| 76 | Duelle | Steuerprüfung: Alle Duelle sind Kopfrechen-Duelle. | Düellolar | Vergi denetimi: Tüm düellolar zihinden hesap düellosu. |
+| 77 | Nach der Runde | Party! Wer in einem Raum mit 3 oder mehr Leuten steht, bekommt 50 Taler. | Tur sonunda | Parti! 3 veya daha fazla kişinin olduğu bir odadaki herkes 50 Altın alıyor. |
+| 78 | Nach der Runde | Zweisamkeit: Wer genau zu zweit in einem Raum ist, bekommt 60 Taler. | Tur sonunda | Baş başa: Bir odada tam iki kişi olanlar 60 Altın alıyor. |
+| 79 | Nach der Runde | Einzelgänger-Steuer: Wer allein in einem Raum steht, zahlt 50 Taler. | Tur sonunda | Yalnızlık vergisi: Bir odada tek başına kalan 50 Altın ödüyor. |
+| 80 | Räume | Lesung in der Bibliothek: Sie ist geschlossen. Dafür gibt es im Garten 40 Taler extra. | Odalar | Kütüphanede okuma etkinliği: Kütüphane kapalı. Bunun yerine bahçede ekstra 40 Altın var. |
+| 81 | Räume | Ottos Schlafzimmer ist verflucht: Heute liegen dort nur verfluchte Erbstücke. | Odalar | Otto'nun yatak odası lanetli: Bugün orada sadece lanetli miras eşyaları var. |
+| 82 | Räume | Glückstag: Im Schlafzimmer liegen heute nur wertvolle Erbstücke. | Odalar | Şans günü: Bugün yatak odasında sadece değerli miras eşyaları var. |
+| 83 | Sofort | Steuerrückzahlung: Jeder bekommt sofort 10 % seines Vermögens dazu. | Anında | Vergi iadesi: Herkes hemen servetinin %10 kadarını ek olarak alıyor. |
+| 84 | Sofort | Inflation! Jeder verliert sofort 15 % seines Vermögens. | Anında | Enflasyon! Herkes hemen servetinin %15 kadarını kaybediyor. |
+| 85 | Sofort | Anti-Robin-Hood: Der Ärmste muss dem Reichsten 80 Taler geben. Otto war kein netter Mensch. | Anında | Ters Robin Hood: En fakir, en zengine 80 Altın vermek zorunda. Otto iyi biri değildi. |
+| 86 | Sofort | Glückszahl Sieben: Wessen Vermögen eine 7 enthält, bekommt 77 Taler. | Anında | Şanslı yedi: Serveti içinde 7 rakamı geçen herkes 77 Altın alıyor. |
+| 87 | Abstimmung | Witzeklausel: Jeder erzählt einen Witz über Otto. Am Ende der Runde wird der beste gewählt (+100). | Oylama | Fıkra maddesi: Herkes Otto hakkında bir fıkra anlatıyor. Tur sonunda en iyisi seçilecek (+100). |
+| 88 | Abstimmung | Grabrede: Jeder hält eine Grabrede für Otto in genau einem Satz. Die rührendste gewinnt (+90). | Oylama | Cenaze konuşması: Herkes Otto için tek cümlelik bir konuşma yapıyor. En dokunaklısı kazanır (+90). |
+| 89 | Abstimmung | Tierklausel: Imitiert Ottos Lieblingstier. Die beste Imitation gewinnt (+80). | Oylama | Hayvan maddesi: Otto'nun en sevdiği hayvanı taklit edin. En iyi taklit kazanır (+80). |
+| 90 | Abstimmung | Gier-Verdacht: Am Ende der Runde wählt ihr den gierigsten Verwandten am Tisch (−90). | Oylama | Açgözlülük şüphesi: Tur sonunda masadaki en açgözlü akrabayı seçeceksiniz (−90). |
+| 91 | Abstimmung | Lügendetektor: Am Ende der Runde wählt ihr, wer heute am meisten gelogen hat (−80). | Oylama | Yalan makinesi: Tur sonunda bugün en çok kimin yalan söylediğini seçeceksiniz (−80). |
+| 92 | Abstimmung | Tanzklausel: Jeder zeigt Ottos Lieblingstanz im Sitzen. Der beste Tänzer gewinnt (+100). | Oylama | Dans maddesi: Herkes oturduğu yerde Otto'nun en sevdiği dansı yapıyor. En iyi dansçı kazanır (+100). |
+| 93 | Abstimmung | Dichterklausel: Reimt einen Zweizeiler über Ottos Gebiss. Der schönste Reim gewinnt (+100). | Oylama | Şair maddesi: Otto'nun takma dişleri hakkında iki dizelik bir şiir yazın. En güzel kafiye kazanır (+100). |
+| 94 | Abstimmung | Schleimer-Klausel: Wer sich am meisten beim Notar einschleimt, wird am Ende bestraft (−70). | Oylama | Yağcılık maddesi: Notere en çok yağ çeken tur sonunda cezalandırılır (−70). |
+| 95 | Abstimmung | Heldenklausel: Am Ende der Runde wählt ihr den Familienhelden (+120). | Oylama | Kahraman maddesi: Tur sonunda ailenin kahramanını seçeceksiniz (+120). |
+| 96 | Abstimmung | Bösewicht-Klausel: Am Ende der Runde wählt ihr den größten Bösewicht (−100). | Oylama | Kötü adam maddesi: Tur sonunda en büyük kötüyü seçeceksiniz (−100). |
+| 97 | Abstimmung | Sprachkurs: Jeder sagt einen Satz auf Deutsch und einen auf Türkisch. Die beste Aussprache gewinnt (+90). | Oylama | Dil kursu: Herkes bir cümle Almanca, bir cümle Türkçe söylüyor. En iyi telaffuz kazanır (+90). |
+| 98 | Abstimmung | Geschichtenerzähler: Erzählt, wie Otto wirklich gestorben ist. Die beste Geschichte gewinnt (+100). | Oylama | Hikâye anlatıcısı: Otto'nun gerçekte nasıl öldüğünü anlatın. En iyi hikâye kazanır (+100). |
+| 99 | Abstimmung | Familienfoto: Alle zeigen ihre beste Erbschafts-Pose. Die beste Pose gewinnt (+80). | Oylama | Aile fotoğrafı: Herkes en iyi miras pozunu veriyor. En iyi poz kazanır (+80). |
+| 100 | Finale | Letzte Klausel: Alle Räume zahlen dreifach. Danach wird das Testament eröffnet! | Final | Son madde: Tüm odalar üç kat ödüyor. Ardından vasiyet açılıyor! |

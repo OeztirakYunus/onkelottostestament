@@ -27,8 +27,19 @@
     <form id="join-form" class="join-form parchment" autocomplete="off">
       <label><span data-i="p.code"></span><input id="in-code" maxlength="4" autocapitalize="characters" spellcheck="false" inputmode="text"></label>
       <label><span data-i="p.name"></span><input id="in-name" maxlength="14" spellcheck="false" enterkeyhint="go"></label>
-      <div class="av-label" data-i="p.avatar"></div>
-      <div id="av-grid" class="av-grid"></div>
+
+      <div id="join-photo" class="join-photo">
+        <div class="av-label" data-i="p.photoTitle"></div>
+        <button type="button" class="portrait-btn" id="join-portrait"><span class="portrait-ph">📸</span></button>
+        <button type="button" class="btn blood" id="join-cam"><span>📸</span><span data-i="p.takePhoto"></span></button>
+        <button type="button" class="linkish" id="join-to-emoji" data-i="p.skipPhoto"></button>
+      </div>
+      <div id="join-emoji" class="join-emoji hidden">
+        <div class="av-label" data-i="p.avatar"></div>
+        <div id="av-grid" class="av-grid"></div>
+        <button type="button" class="linkish" id="join-to-photo" data-i="p.backToPhoto"></button>
+      </div>
+
       <p id="join-err" class="join-err" role="alert"></p>
       <button class="btn big blood" type="submit" id="btn-join" data-i="p.join"></button>
     </form>
@@ -43,7 +54,8 @@
       </button>
       <div class="phead-right">
         <div class="lang-switch small" data-langswitch><button data-lang="de">DE</button><button data-lang="tr">TR</button></div>
-        <button class="dossier-btn" id="dossier-btn" aria-label="Dossier">📂</button>
+        <button class="hbtn" id="chat-btn" aria-label="Chat">💬<i id="chat-badge" class="badge hidden"></i></button>
+        <button class="hbtn" id="dossier-btn" aria-label="Dossier">📂</button>
       </div>
     </header>
     <div class="pbar" id="pbar"><div id="pbar-fill"></div></div>
@@ -54,6 +66,49 @@
   <div id="sheet" class="sheet hidden">
     <div class="sheet-back" data-close></div>
     <div class="sheet-body parchment" id="sheet-body"></div>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat" class="chat hidden" role="dialog" aria-modal="true">
+    <div class="chat-head">
+      <button class="hbtn" id="chat-back" aria-label="Zurück">‹</button>
+      <div class="chat-title" id="chat-title"></div>
+      <button class="hbtn" id="chat-close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="chat-body" id="chat-body"></div>
+    <form class="chat-form hidden" id="chat-form" autocomplete="off">
+      <input id="chat-input" maxlength="240" enterkeyhint="send">
+      <button class="btn blood" type="submit" id="chat-send">➤</button>
+    </form>
+  </div>
+
+  <!-- Porträt-Studio -->
+  <div id="photo" class="photo-modal hidden" role="dialog" aria-modal="true">
+    <div class="photo-inner">
+      <h2 class="display" data-i="p.photoTitle"></h2>
+      <p class="sub" data-i="p.photoHint"></p>
+      <div class="cam-stage" id="cam-stage">
+        <video id="cam-video" playsinline muted autoplay></video>
+        <canvas id="cam-shot" class="hidden" width="256" height="256"></canvas>
+        <div class="cam-ring"></div>
+        <div class="cam-count" id="cam-count"></div>
+        <div class="cam-flash" id="cam-flash"></div>
+        <div class="cam-placeholder" id="cam-ph">📸</div>
+      </div>
+      <p class="sub small hidden" id="cam-note" data-i="p.noCamera"></p>
+      <div class="flt-row" id="flt-row"></div>
+      <div class="cam-actions">
+        <button type="button" class="btn big blood" id="cam-shoot"><span>📸</span><span data-i="p.takePhoto"></span></button>
+        <button type="button" class="btn ghosty hidden" id="cam-retake"><span>🔁</span><span data-i="p.retake"></span></button>
+        <button type="button" class="btn big hidden" id="cam-ok">✓</button>
+      </div>
+      <div class="cam-alt">
+        <button type="button" class="linkish" id="cam-file-btn">🖼️ <span data-i="p.pickFile"></span></button>
+        <button type="button" class="linkish" id="cam-cancel" data-i="p.cancel"></button>
+      </div>
+      <input type="file" id="cam-file" accept="image/*" class="hidden">
+      <input type="file" id="cam-native" accept="image/*" capture="user" class="hidden">
+    </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>

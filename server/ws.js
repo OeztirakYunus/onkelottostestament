@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const { EventEmitter } = require('events');
 
 const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-const MAX_PAYLOAD = 256 * 1024;
+const MAX_PAYLOAD = 512 * 1024;
 let nextId = 1;
 
 class Client extends EventEmitter {

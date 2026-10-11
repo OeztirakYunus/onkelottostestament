@@ -27,9 +27,29 @@
     lure:      { emoji: '🪤', target: 'player' },
     tape:      { emoji: '🚧', target: 'room' },
     gift:      { emoji: '🎁', target: 'player', needsHeirloom: true },
-    extortion: { emoji: '💼', target: null }
+    extortion: { emoji: '💼', target: null },
+    // 15 neue Karten
+    swap:      { emoji: '🔄', target: 'player' },
+    magnet:    { emoji: '🧲', target: null },
+    clover:    { emoji: '🍀', target: null },
+    sleep:     { emoji: '💤', target: 'player' },
+    invoice:   { emoji: '🧾', target: 'player' },
+    copycat:   { emoji: '🐒', target: 'player' },
+    dice:      { emoji: '🎲', target: null },
+    bell:      { emoji: '🔔', target: null },
+    curse:     { emoji: '🕯️', target: 'room' },
+    trumpet:   { emoji: '🎺', target: null },
+    paparazzi: { emoji: '📸', target: 'player' },
+    pickcard:  { emoji: '🐍', target: 'player' },
+    wine:      { emoji: '🍷', target: 'player' },
+    stinkbomb: { emoji: '💨', target: 'room' },
+    legacy:    { emoji: '🏺', target: null }
   };
-  const CARD_WEIGHTS = { banana: 4, thief: 4, forgery: 3, lawyer: 3, blackout: 1, lure: 3, tape: 2, gift: 2, extortion: 3 };
+  const CARD_WEIGHTS = {
+    banana: 4, thief: 4, forgery: 3, lawyer: 3, blackout: 1, lure: 3, tape: 2, gift: 2, extortion: 3,
+    swap: 2, magnet: 1, clover: 2, sleep: 2, invoice: 2, copycat: 2, dice: 2, bell: 1, curse: 2,
+    trumpet: 2, paparazzi: 2, pickcard: 2, wine: 2, stinkbomb: 2, legacy: 1
+  };
   const CARD_POOL = [];
   Object.keys(CARD_WEIGHTS).forEach(k => { for (let i = 0; i < CARD_WEIGHTS[k]; i++) CARD_POOL.push(k); });
 
@@ -37,8 +57,12 @@
     relative: { emoji: '🤑' },
     butler:   { emoji: '🤵' },
     kid:      { emoji: '👶' },
-    cat:      { emoji: '🐈‍⬛' }
+    cat:      { emoji: '🐈‍⬛' },
+    seer:     { emoji: '🔮' },
+    clown:    { emoji: '🤡' }
   };
+  // Ab wie vielen Spielern eine Rolle ins Spiel kommt
+  const ROLE_UNLOCK = { kid: 4, butler: 5, cat: 6, seer: 7, clown: 8 };
 
   // Werte bleiben bis zur Testamentseröffnung geheim!
   const HEIRLOOMS = [
@@ -79,10 +103,11 @@
   ];
 
   /*
-   * 50 Testamentsklauseln. fx-Schlüssel:
+   * 100 Testamentsklauseln. fx-Schlüssel:
    *  mult {raum|all: faktor}  closed [räume]  noCards  now/after + n  vote (Betrag)
-   *  forceBlackout bedroomTwo vaultShare vaultAlarmAt thiefMult game duelAll bonus
-   *  kitchenPoison reverseDuel maxCards gardenPot mirror req final
+   *  forceBlackout bedroomTwo vaultShare vaultAlarmAt thiefMult extMult game duelAll bonus {raum: betrag}
+   *  kitchenPoison reverseDuel maxCards gardenPot mirror cellarNoLoss ghostMult noDuels libraryTwo
+   *  gardenUnsafe heirloomKind ('cursed'|'blessed') role (für roleHint) req final
    */
   const CLAUSES = [
     { id: 'vault_double',    fx: { mult: { vault: 2 } } },
@@ -134,8 +159,81 @@
     { id: 'honesty',         fx: { after: 'noCardBonus', n: 50 } },
     { id: 'consolation',     fx: { now: 'poorCards' } },
     { id: 'mirror',          fx: { mirror: true } },
+    /* ---- 50 neue Klauseln ---- */
+    { id: 'cake',            fx: { now: 'allPlus', n: 30 } },
+    { id: 'lottery',         fx: { now: 'lottery', n: 200 } },
+    { id: 'birthday',        fx: { now: 'birthday', n: 20 } },
+    { id: 'cat_ate_cards',   fx: { now: 'cardTax' } },
+    { id: 'pawnshop',        fx: { now: 'pawn', n: 25 } },
+    { id: 'card_storm',      fx: { now: 'shuffleHands' } },
+    { id: 'innocent',        fx: { now: 'innocent', req: 'innocent' } },
+    { id: 'cat_hint',        fx: { now: 'roleHint', role: 'cat', req: 'cat' } },
+    { id: 'kid_hint',        fx: { now: 'roleHint', role: 'kid', req: 'kid' } },
+    { id: 'clown_hint',      fx: { now: 'roleHint', role: 'clown', req: 'clown' } },
+    { id: 'swap_random',     fx: { now: 'swapRandom' } },
+    { id: 'peace',           fx: { now: 'peace', n: 25 } },
+    { id: 'poor_heirloom',   fx: { now: 'poorHeirloom' } },
+    { id: 'small_savers',    fx: { now: 'smallSavers', n: 100 } },
+    { id: 'empty_vault',     fx: { mult: { vault: 0 } } },
+    { id: 'kitchen_feast',   fx: { bonus: { kitchen: 60 } } },
+    { id: 'cellar_safe',     fx: { cellarNoLoss: true } },
+    { id: 'lazy_alarm',      fx: { vaultAlarmAt: 4 } },
+    { id: 'ghost_party',     fx: { ghostMult: 2, req: 'ghosts' } },
+    { id: 'ceasefire',       fx: { noDuels: true } },
+    { id: 'gossip',          fx: { libraryTwo: true } },
+    { id: 'extortion_season',fx: { extMult: 2 } },
+    { id: 'garden_fence',    fx: { gardenUnsafe: true } },
+    { id: 'card_chaos',      fx: { maxCards: 3 } },
+    { id: 'fair',            fx: { game: 'balloon' } },
+    { id: 'brain_day',       fx: { game: 'memory' } },
+    { id: 'tax_audit',       fx: { game: 'math' } },
+    { id: 'party',           fx: { after: 'crowdBonus', n: 50 } },
+    { id: 'pairs',           fx: { after: 'pairs', n: 60 } },
+    { id: 'loner_tax',       fx: { after: 'aloneTax', n: 50 } },
+    { id: 'reading',         fx: { closed: ['library'], bonus: { garden: 40 } } },
+    { id: 'cursed_bed',      fx: { heirloomKind: 'cursed' } },
+    { id: 'blessed_bed',     fx: { heirloomKind: 'blessed' } },
+    { id: 'refund',          fx: { now: 'percent', n: 10 } },
+    { id: 'inflation',       fx: { now: 'percent', n: -15 } },
+    { id: 'anti_robin',      fx: { now: 'antiRobin', n: 80 } },
+    { id: 'lucky_seven',     fx: { now: 'digit7', n: 77 } },
+    { id: 'joke',            fx: { vote: 100 } },
+    { id: 'eulogy',          fx: { vote: 90 } },
+    { id: 'animal',          fx: { vote: 80 } },
+    { id: 'greedy',          fx: { vote: -90 } },
+    { id: 'liar',            fx: { vote: -80 } },
+    { id: 'dance',           fx: { vote: 100 } },
+    { id: 'poem',            fx: { vote: 100 } },
+    { id: 'slimer',          fx: { vote: -70 } },
+    { id: 'hero',            fx: { vote: 120 } },
+    { id: 'villain',         fx: { vote: -100 } },
+    { id: 'language',        fx: { vote: 90 } },
+    { id: 'story',           fx: { vote: 100 } },
+    { id: 'pose',            fx: { vote: 80 } },
     { id: 'finale',          fx: { mult: { all: 3 }, final: true } }
   ];
+
+  /*
+   * 14 Minispiele für den Familienstreit.
+   * time = Sekunden, die der Server wartet; play = Sekunden auf dem Handy
+   * better: high (mehr ist besser), low (weniger ist besser), close (nah an pd.target), unique (höchste einzigartige Zahl)
+   */
+  const DUELS = {
+    tap:       { emoji: '👆', time: 8,  play: 5.5, better: 'high' },
+    reaction:  { emoji: '🤠', time: 11, play: 0,   better: 'low' },
+    estimate:  { emoji: '🤔', time: 21, play: 0,   better: 'close' },
+    stopwatch: { emoji: '⏱️', time: 14, play: 0,   better: 'close' },
+    memory:    { emoji: '🧠', time: 30, play: 26,  better: 'high' },
+    math:      { emoji: '🧮', time: 19, play: 15,  better: 'high' },
+    balloon:   { emoji: '🎈', time: 19, play: 15,  better: 'high' },
+    colorword: { emoji: '🎨', time: 19, play: 15,  better: 'high' },
+    mole:      { emoji: '🔨', time: 19, play: 15,  better: 'high' },
+    count:     { emoji: '🪙', time: 20, play: 0,   better: 'close' },
+    safe:      { emoji: '🔐', time: 31, play: 27,  better: 'low' },
+    oddone:    { emoji: '🔍', time: 19, play: 15,  better: 'high' },
+    arrows:    { emoji: '⬆️', time: 19, play: 15,  better: 'high' },
+    unique:    { emoji: '🤑', time: 16, play: 0,   better: 'unique' }
+  };
 
   const AVATARS = ['🦊','🐸','🦉','🐷','🐵','🦄','🐙','🦁','🐼','🐔','🦖','🐢','🐝','🦩','🐨','🐺','🦔','🐳'];
   const COLORS = ['#e0525a','#f0a23b','#e6d14a','#6cc36a','#3fb8b0','#4a90e2','#8a6fe0','#d667c4',
@@ -145,8 +243,8 @@
   const data = {
     START_MONEY, HAND_MAX, ROOMS, BASE_ROOMS, BIG_ROOMS, CARDS, CARD_POOL, ROLES,
     HEIRLOOMS, HEIRLOOM_BY_ID: byId(HEIRLOOMS), QUESTIONS, QUESTION_BY_ID: byId(QUESTIONS),
-    CLAUSES, CLAUSE_BY_ID: byId(CLAUSES), AVATARS, COLORS,
-    DUEL_TYPES: ['tap', 'reaction', 'estimate', 'stopwatch']
+    CLAUSES, CLAUSE_BY_ID: byId(CLAUSES), AVATARS, COLORS, ROLE_UNLOCK, DUELS,
+    DUEL_TYPES: Object.keys(DUELS)
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = data;

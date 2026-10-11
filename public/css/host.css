@@ -359,3 +359,44 @@ body.thunder::before { content: ''; position: fixed; inset: 0; z-index: 60; back
 .fam-card .ms { font-size: 1.8rem; letter-spacing: .2rem; }
 
 .conn-lost { position: fixed; right: 1rem; bottom: 1rem; z-index: 100; width: 3rem; height: 3rem; border-radius: 50%; display: grid; place-items: center; background: var(--blood); animation: pulse 1s infinite; font-size: 1.4rem; }
+
+/* ================= Neu: Flüstern, Fotos ================= */
+.whispers { position: fixed; left: 1.2rem; bottom: 1.2rem; z-index: 45; display: flex; flex-direction: column; gap: .5rem; pointer-events: none; max-width: 32rem; }
+.whisper {
+  display: flex; align-items: center; gap: .55rem; padding: .45rem .9rem .45rem .5rem; border-radius: 999px;
+  background: rgba(10, 18, 14, .88); box-shadow: inset 0 0 0 1px rgba(217, 164, 65, .35), 0 8px 20px rgba(0, 0, 0, .4);
+  animation: whisper-in .45s var(--ease-bounce) both; font-size: .95rem;
+}
+.whisper.out { animation: whisper-out .45s ease-in forwards; }
+.whisper .wdots { font-size: 1.1rem; animation: pulse .8s infinite; }
+.whisper .wfam { font-size: 1.4rem; }
+.whisper .wtext { color: var(--text-dim); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.medal.wsm { width: 2rem; height: 2rem; font-size: 1.1rem; box-shadow: 0 0 0 2px var(--c); display: inline-grid; }
+.fam-card .ms { display: flex; gap: .3rem; justify-content: center; margin: .4rem 0; letter-spacing: 0; }
+@keyframes whisper-in { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes whisper-out { to { transform: translateX(-30px); opacity: 0; } }
+.spotlight .medal { margin-bottom: .6rem; }
+.clown-line { color: var(--brass-hi) !important; font-weight: 700; margin-top: .6rem; }
+.token .medal.has-photo { background: #2a2016; }
+.heir-list .medal img, .token .medal img { border-radius: 50%; }
+
+/* ================= Sitzung beenden ================= */
+.tool.end { font-size: .85rem; font-weight: 700; color: var(--bad); }
+.tool.end span { margin-left: .2rem; }
+.end-confirm { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(5, 10, 8, .8); animation: fade-in .25s; }
+.end-box { width: min(34rem, 90vw); padding: 2rem 2.2rem; text-align: center; animation: pop-in .35s var(--ease-bounce); }
+.end-ico { font-size: 3rem; }
+.end-box p { font-size: 1.35rem; font-weight: 600; line-height: 1.4; margin: .8rem 0 1.6rem; }
+.end-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn.ghosty.dark { color: var(--ink); box-shadow: inset 0 0 0 2px rgba(42, 26, 18, .35); }
+.ended { display: grid; place-items: center; padding: 2rem; overflow: auto; }
+.ended-inner { text-align: center; width: min(48rem, 92vw); animation: rise .8s var(--ease-out); }
+.ended-seal { font-size: 6rem; margin: 0 auto 1rem; animation: stamp-in .9s .2s var(--ease-bounce) both; }
+.ended h1 { font-size: 4rem; margin: 0; color: var(--parch); text-shadow: 0 2px 0 var(--brass-dk); }
+.ended-sub { color: var(--text-dim); font-size: 1.3rem; margin: .6rem 0 1.6rem; }
+.ended-list { list-style: none; margin: 0 0 2rem; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: .6rem; text-align: left; }
+.ended-list li { display: grid; grid-template-columns: 1.6rem auto 1fr auto; align-items: center; gap: .7rem; padding: .5rem .8rem; border-radius: 12px; background: rgba(0, 0, 0, .3); box-shadow: inset 0 0 0 1px rgba(217, 164, 65, .2); animation: rise .5s var(--ease-out) both; }
+.ended-list .rk { font-family: var(--font-display); color: var(--text-dim); text-align: center; }
+.ended-list .medal { width: 2.6rem; height: 2.6rem; font-size: 1.4rem; }
+.ended-list .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ended-list li:first-child { box-shadow: inset 0 0 0 2px var(--brass-hi), 0 0 24px rgba(243, 207, 122, .35); }

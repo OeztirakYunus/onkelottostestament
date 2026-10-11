@@ -1,7 +1,7 @@
 /* Fernseher-Ansicht: Spielbrett, Overlays, Animationen */
 (function () {
   'use strict';
-  const { D, I, Connection, Sound, Voice, confetti, esc, $, $$, sleep, fmt, Clock, animateNumber } = window.OTTO;
+  const { D, I, Connection, Sound, Music, Voice, confetti, esc, $, $$, sleep, fmt, Clock, animateNumber, fmtScore } = window.OTTO;
 
   let lang = localStorage.getItem('otto.lang') === 'tr' ? 'tr' : 'de';
   let S = null;
@@ -14,12 +14,15 @@
 
   Sound.enabled = localStorage.getItem('otto.sound') !== 'off';
   Voice.enabled = localStorage.getItem('otto.voice') !== 'off';
+  Music.enabled = localStorage.getItem('otto.music') !== 'off';
+  Voice.load();
 
   const conn = new Connection();
   const t = (k, p) => I.t(lang, k, p);
   const P = (id) => (S && S.players.find(p => p.id === id)) || null;
   const nm = (id) => (P(id) || { name: '?' }).name;
-  const medal = (p, cls = '') => p ? `<div class="medal ${p.ghost ? 'ghost' : ''} ${cls}" style="--c:${p.color}">${p.avatar}</div>` : '';
+  const medal = (p, cls = '') => window.OTTO.medal(p, S && S.code, cls);
+  const say = (keys, opts) => Voice.say(keys, lang, opts);
   const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + fmt(Math.abs(n), lang);
 
   /* ---------------- Texte ---------------- */
@@ -39,9 +42,11 @@
           <button data-lang="de" class="${lang === 'de' ? 'on' : ''}">DE</button><button data-lang="tr" class="${lang === 'tr' ? 'on' : ''}">TR</button>
         </div>
         <button class="tool ${Sound.enabled ? '' : 'off'}" data-tool="sound" title="${esc(t('h.sound'))}">${Sound.enabled ? '🔊' : '🔇'}</button>
+        <button class="tool ${Music.enabled ? '' : 'off'}" data-tool="music" title="${esc(t('h.music'))}">🎵</button>
         <button class="tool ${Voice.enabled ? '' : 'off'}" data-tool="voice" title="${esc(t('h.voice'))}">🗣️</button>
         <button class="tool" data-tool="full" title="${esc(t('h.fullscreen'))}">⛶</button>
-        ${inGame ? `<button class="tool skip" data-tool="skip">${esc(t('h.skip'))} ⏭</button>` : ''}`;
+        ${inGame ? `<button class="tool skip" data-tool="skip">${esc(t('h.skip'))} ⏭</button>` : ''}
+        ${S ? `<button class="tool end" data-tool="end" title="${esc(t('h.end'))}">🚪 <span>${esc(t('h.end'))}</span></button>` : ''}`;
     });
   }
 
@@ -60,19 +65,23 @@
     if (!tool) return;
     const k = tool.dataset.tool;
     if (k === 'sound') { Sound.enabled = !Sound.enabled; localStorage.setItem('otto.sound', Sound.enabled ? 'on' : 'off'); }
+    if (k === 'music') { Music.setEnabled(!Music.enabled); localStorage.setItem('otto.music', Music.enabled ? 'on' : 'off'); }
     if (k === 'voice') { Voice.enabled = !Voice.enabled; if (!Voice.enabled) Voice.stop(); localStorage.setItem('otto.voice', Voice.enabled ? 'on' : 'off'); }
     if (k === 'full') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); }
+    if (k === 'end') { $('#end-confirm').classList.remove('hidden'); Sound.play('pop'); return; }
     if (k === 'skip') { if (S && S.phase === 'finale' && finaleSkip) finaleSkip(); else conn.emit('host:skip'); }
     renderTools();
   });
 
   /* ---------------- Verbindung ---------------- */
   $('#btn-create').addEventListener('click', () => {
-    Sound.init(); Sound.play('stamp');
+    Sound.init(); Sound.play('stamp'); Voice.unlock();
     $('#btn-create').disabled = true;
     $('#btn-create').textContent = t('h.connecting');
     conn.emit('host:create', { lang, origin: location.origin }, (res) => {
       sessionStorage.setItem('otto.host', JSON.stringify(res));
+      Music.play('lobby');
+      setTimeout(() => say('v.welcome'), 600);
     });
   });
 
@@ -85,6 +94,45 @@
     }
   });
   conn.on('close', () => $('#conn-lost').classList.remove('hidden'));
+
+  /* ---------------- Sitzung beenden ---------------- */
+  $('#end-no').addEventListener('click', () => $('#end-confirm').classList.add('hidden'));
+  $('#end-yes').addEventListener('click', () => {
+    $('#end-confirm').classList.add('hidden');
+    conn.emit('host:end');
+  });
+  $('#btn-new-session').addEventListener('click', () => { sessionStorage.removeItem('otto.host'); location.reload(); });
+  conn.on('ended', (msg) => {
+    sessionStorage.removeItem('otto.host');
+    seq++; finaleSkip = null;
+    const code = msg.code;
+    S = null; enteredKey = '';
+    hideOverlay(); phaseBanner(null);
+    $('#event-banner').innerHTML = ''; $('#whispers').innerHTML = '';
+    ['start', 'lobby', 'game'].forEach(n => $('#scr-' + n).classList.add('hidden'));
+    $('#ended-list').innerHTML = (msg.started ? msg.ranking : msg.ranking.map(p => ({ ...p, money: null }))).map((p, i) => `
+      <li style="animation-delay:${200 + i * 90}ms"><span class="rk">${msg.started ? i + 1 : ''}</span>${window.OTTO.medal(p, code)}<span class="nm">${esc(p.name)}</span>${p.money != null ? `<span class="money">${fmt(p.money, lang)}</span>` : ''}</li>`).join('');
+    $('#scr-ended').classList.remove('hidden');
+    Music.play('finale');
+    Sound.play('bell');
+    say('v.ended');
+    if (msg.started) setTimeout(() => confetti({ coins: true, count: 90 }), 600);
+  });
+  // Jemand schreibt heimlich: auf dem Fernseher sieht man nur, DASS geflüstert wird
+  conn.on('whisper', (w) => {
+    if (!S) return;
+    const box = $('#whispers');
+    while (box.children.length >= 3) box.firstElementChild.remove();
+    const from = P(w.from), to = w.to ? P(w.to) : null;
+    if (!from) return;
+    const el = document.createElement('div');
+    el.className = 'whisper';
+    el.innerHTML = `${medal(from, 'wsm')}<span class="wdots">💬</span>${to ? medal(to, 'wsm') : '<span class="wfam">👨‍👩‍👧</span>'}
+      <span class="wtext">${esc(to ? t('h.whisper', { a: from.name, b: to.name }) : t('h.famWhisper', { n: (w.fam || 0) + 1 }))}</span>`;
+    box.appendChild(el);
+    Sound.play('whisper');
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 4200);
+  });
   conn.on('state', (d) => {
     S = d;
     Clock.sync(d.now);
@@ -96,9 +144,11 @@
     ['start', 'lobby', 'game'].forEach(n => $('#scr-' + n).classList.toggle('hidden', n !== name));
   }
 
+  const MUSIC_FOR = { lobby: 'lobby', intro: null, clause: null, plan: 'plan', reveal: 'plan', duel: 'duel', results: 'lobby', vote: 'plan', finalvote: 'plan', finale: 'finale' };
   /* ---------------- Hauptrender ---------------- */
   function render() {
     if (!S) return;
+    Music.play(MUSIC_FOR[S.phase] || null);
     if (S.phase === 'lobby') {
       showScreen('lobby');
       hideOverlay();
@@ -134,7 +184,7 @@
     $('#heir-empty').classList.toggle('hidden', n > 0);
     const list = $('#heir-list');
     list.classList.toggle('many', n > 10);
-    const ids = S.players.map(p => p.id + p.avatar + p.connected + p.name).join();
+    const ids = S.players.map(p => p.id + p.avatar + p.connected + p.name + p.photo).join();
     if (list.dataset.ids !== ids) {
       list.dataset.ids = ids;
       list.innerHTML = S.players.map(p => `
@@ -192,8 +242,13 @@
         el = document.createElement('div');
         el.className = 'token';
         el.dataset.pid = p.id;
-        el.innerHTML = `<div class="medal" style="--c:${p.color}">${p.avatar}</div><div class="tn"></div>`;
+        el.innerHTML = `<div class="medal"></div><div class="tn"></div>`;
         box.appendChild(el);
+      }
+      if (el.dataset.ph !== String(p.photo)) {
+        el.dataset.ph = String(p.photo);
+        const tmp = document.createElement('div'); tmp.innerHTML = medal(p);
+        el.replaceChild(tmp.firstElementChild, el.querySelector('.medal'));
       }
       el.querySelector('.tn').textContent = p.name;
       el.querySelector('.medal').classList.toggle('ghost', p.ghost);
@@ -371,8 +426,8 @@
       <h1 class="display">${esc(t('i.dead'))}</h1>
       <p>${esc(t('i.money'))}</p>
       <p class="look">📱 ${esc(t('i.look'))}</p></div>`);
-    Sound.play('bell');
-    Voice.say(t('i.dead') + ' ' + t('i.money'), lang);
+    Sound.play('bell'); Sound.play('heartbeat');
+    setTimeout(() => say('v.intro'), 900);
   }
 
   function enterClause(my) {
@@ -397,7 +452,8 @@
       <div class="scroll-rod"></div>
     </div>`);
     Sound.play('whoosh');
-    setTimeout(() => { if (seq === my) Voice.say(text, lang); }, 1200);
+    setTimeout(() => { if (seq === my) say(pd.final ? ['v.lastRound', 'clause.' + pd.clause] : 'clause.' + pd.clause); }, 1200);
+    words.forEach((w, i) => { if (i % 2 === 0) setTimeout(() => { if (seq === my) Sound.play('typewriter'); }, 1300 + i * wordDelay); });
     setTimeout(() => { if (seq === my) { Sound.play('stamp'); document.body.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(6px)' }, { transform: 'translateY(0)' }], { duration: 180 }); } }, sealAt + 150);
     if (pd.final) setTimeout(() => { if (seq === my) Sound.play('fanfare'); }, 600);
     (pd.nowLines || []).forEach((l, i) => setTimeout(() => { if (seq === my) Sound.play(l.a < 0 ? 'lose' : 'coin'); }, sealAt + 600 + i * 450));
@@ -409,6 +465,7 @@
     layoutTokens({}, 30);
     updatePlanBanner();
     Sound.play('pop');
+    say('v.plan', { queue: true });
   }
   function updatePlanBanner() {
     const act = S.players.filter(p => p.connected || p.isBot);
@@ -422,6 +479,11 @@
     });
   }
 
+  const CARD_SFX = { banana: 'slip', thief: 'thief', forgery: 'scribble', lawyer: 'gavel', blackout: 'powerdown', lure: 'whistle', tape: 'tape', gift: 'gift', extortion: 'kaching',
+    swap: 'whoosh', magnet: 'magnet', clover: 'sparkle', sleep: 'snore', invoice: 'kaching', copycat: 'boing', dice: 'dice', bell: 'bell', curse: 'ghost',
+    trumpet: 'party', paparazzi: 'shutter', pickcard: 'shuffle', wine: 'hic', stinkbomb: 'stink', legacy: 'sparkle' };
+  const EVENT_SFX = { 'ev.storm': 'thunder', 'ev.blocked': 'boing', 'ev.bounced': 'meow', 'ev.gardenSafe': 'birds' };
+  const EVENT_VOICE = { 'ev.storm': 'v.storm', 'ev.blocked': 'v.blocked', 'ev.bounced': 'v.bounced', 'ev.gardenSafe': 'v.gardenSafe' };
   async function enterReveal(my) {
     hideOverlay(); clearLogs();
     $$('.token').forEach(el => el.classList.remove('done'));
@@ -430,6 +492,7 @@
     setClosed((pd.closed || []).filter(r => !tapeRooms.includes(r)));
     phaseBanner(`👣 ${esc(t('g.reveal'))}`);
     Sound.play('whoosh');
+    say('v.reveal');
     const pos = { ...pd.planned };
     layoutTokens(pos, 70);
     await sleep(2600);
@@ -446,21 +509,33 @@
       const text = t(ev.k, { a: nm(ev.from), b: nm(ev.to), r: ev.room, n: ev.n, h: ev.h });
       eventCard(emoji, t('card.' + ev.card), text);
       Sound.play('card');
-      Voice.say(text, lang);
+      setTimeout(() => { if (seq === my) Sound.play(EVENT_SFX[ev.k] || CARD_SFX[ev.card] || 'pop'); }, 250);
+      say(EVENT_VOICE[ev.k] || 'v.card.' + ev.card);
       if (ev.k === 'rv.blackout' || ev.k === 'ev.storm') {
         document.body.classList.remove('blackout'); void document.body.offsetWidth; document.body.classList.add('blackout');
-        if (ev.k === 'ev.storm') { document.body.classList.add('thunder'); Sound.play('thunder'); setTimeout(() => document.body.classList.remove('thunder'), 1000); }
+        if (ev.k === 'ev.storm') { document.body.classList.add('thunder'); setTimeout(() => document.body.classList.remove('thunder'), 1000); }
         setTimeout(() => document.body.classList.remove('blackout'), 2300);
       }
       if (ev.k === 'rv.tape') { closedNow.add(ev.room); setClosed([...closedNow]); }
       if (ev.moved) {
         Object.assign(pos, ev.moved);
-        await sleep(ev.k === 'rv.blackout' || ev.k === 'ev.storm' ? 700 : 350);
-        layoutTokens(pos, ev.k === 'rv.blackout' || ev.k === 'ev.storm' ? 25 : 0);
+        const mass = ['rv.blackout', 'ev.storm', 'rv.bell', 'rv.stinkbomb'].includes(ev.k);
+        await sleep(mass ? 700 : 350);
+        layoutTokens(pos, mass ? 25 : 0);
         Object.keys(ev.moved).forEach(pid => tokenFx(pid, ev.k === 'rv.banana' ? 'spin' : 'hop', 1500));
       }
-      if (ev.k === 'rv.thief' && ev.n) { floater(ev.to, '−' + ev.n, 'neg'); setTimeout(() => floater(ev.from, '+' + ev.n, 'pos'), 500); tokenFx(ev.to, 'hit'); Sound.play('coin'); }
-      if (ev.k === 'rv.extortion' && ev.n) { floater(ev.from, '+' + ev.n, 'pos'); Sound.play('coin'); }
+      if (ev.k === 'rv.thief' && ev.n) { floater(ev.to, '−' + ev.n, 'neg'); setTimeout(() => floater(ev.from, '+' + ev.n, 'pos'), 500); tokenFx(ev.to, 'hit'); }
+      if (ev.k === 'rv.extortion' && ev.n) floater(ev.from, '+' + ev.n, 'pos');
+      if (ev.k === 'rv.invoice' && ev.n) { floater(ev.to, '−' + ev.n, 'neg'); setTimeout(() => floater(ev.from, '+' + ev.n, 'pos'), 500); tokenFx(ev.to, 'hit'); }
+      if (ev.k === 'rv.magnet' && ev.n) { floater(ev.from, '+' + ev.n, 'pos'); tokenFx(ev.from, 'glow', 2000); }
+      if (ev.k === 'rv.diceWin') { floater(ev.from, '+' + ev.n, 'pos'); tokenFx(ev.from, 'spin', 1500); }
+      if (ev.k === 'rv.diceLose') { floater(ev.from, '−' + ev.n, 'neg'); tokenFx(ev.from, 'hit'); }
+      if (ev.k === 'rv.legacy') floater(ev.from, '🏺 −' + ev.n, 'neutral');
+      if (ev.k === 'rv.sleep') { floater(ev.to, '💤', 'neutral'); tokenFx(ev.to, 'hit'); }
+      if (ev.k === 'rv.wine') { floater(ev.to, '🍷 Hicks!', 'neutral'); tokenFx(ev.to, 'spin', 1500); }
+      if (ev.k === 'rv.paparazzi') { tokenFx(ev.to, 'glow', 1500); document.body.animate([{ filter: 'brightness(2.2)' }, { filter: 'none' }], { duration: 350 }); }
+      if (ev.k === 'rv.clover' || ev.k === 'rv.trumpet') tokenFx(ev.from, 'hop');
+      if (ev.k === 'rv.curse' && ev.room) { const r = $(`.room[data-room="${ev.room}"]`); if (r) r.animate([{ filter: 'hue-rotate(0) brightness(1)' }, { filter: 'hue-rotate(250deg) brightness(.5)' }, { filter: 'none' }], { duration: 1600 }); }
       if (ev.k === 'rv.lawyer' || ev.k === 'rv.forgery') tokenFx(ev.from, 'glow', 2000);
       if (ev.k === 'ev.blocked' || ev.k === 'ev.bounced') tokenFx(ev.to, 'glow', 2000);
       if (ev.k === 'rv.gift') tokenFx(ev.to, 'hop');
@@ -473,13 +548,6 @@
   function fighterHtml(pid, extra = '') {
     const p = P(pid);
     return p ? `<div class="fighter ${extra}" data-f="${pid}">${medal(p)}<span class="nm">${esc(p.name)}</span><span class="sc"></span></div>` : '';
-  }
-  function fmtScore(type, s) {
-    if (s === undefined || s === null || !Number.isFinite(s)) return t('sc.none');
-    if (type === 'tap') return t('sc.tap', { n: s });
-    if (type === 'reaction') return s < 0 ? t('sc.early') : t('sc.ms', { n: Math.round(s) });
-    if (type === 'stopwatch') return t('sc.sec', { n: (s / 1000).toFixed(2) });
-    return fmt(s, lang);
   }
 
   function enterDuel(my) {
@@ -496,15 +564,17 @@
     if (pd.stage === 'play') stageHtml = `<div class="big-count" id="duel-count"></div>`;
     showOverlay(`<div class="ov-inner ov-duel">
       <h1 class="display">⚔️ ${esc(t('g.duelTitle'))}</h1>
-      <div class="game-name">${esc(t('duel.' + pd.type))}</div>
+      <div class="game-name">${D.DUELS[pd.type].emoji} ${esc(t('duel.' + pd.type))}</div>
       <p class="game-desc">${esc(t('dueld.' + pd.type))}</p>
       ${pd.reverse ? `<div class="reverse">🙃 ${esc(t('g.duelReverse'))}</div>` : ''}
       ${pd.stage !== 'intro' ? q : ''}
       <div class="duel-groups">${groupsHtml}</div>
       ${stageHtml}
-      ${pd.stage === 'result' && pd.answer != null ? `<div class="answer-pill">✔ ${esc(t('g.answer', { n: fmt(pd.answer, lang) }))}</div>` : ''}
+      ${pd.stage === 'result' && ['estimate', 'count'].includes(pd.type) && pd.answer != null ? `<div class="answer-pill">✔ ${esc(t('g.answer', { n: fmt(pd.answer, lang) }))}</div>` : ''}
+      ${pd.stage === 'result' && pd.type === 'safe' && pd.secret ? `<div class="answer-pill">🔓 ${esc(t('g.answer', { n: pd.secret }))}</div>` : ''}
+      ${pd.stage === 'result' && pd.type === 'balloon' && pd.pop ? `<div class="answer-pill">💥 ${esc(t('sc.pumps', { n: pd.pop }))}</div>` : ''}
     </div>`);
-    if (pd.stage === 'intro') { Sound.play('drum'); Voice.say(t('g.duelTitle') + ' ' + t('duel.' + pd.type), lang); }
+    if (pd.stage === 'intro') { Sound.play('clang'); setTimeout(() => Sound.play('drum'), 300); say(pd.reverse ? ['v.duel', 'duel.' + pd.type, 'g.duelReverse'] : ['v.duel', 'duel.' + pd.type]); }
     if (pd.stage === 'play') {
       Sound.play('go');
       updateDuelReady();
@@ -522,24 +592,27 @@
         ids.forEach((id, i) => {
           const f = $(`.fighter[data-f="${id}"]`);
           if (!f) return;
-          f.querySelector('.sc').textContent = fmtScore(pd.type, pd.scores[id]);
+          f.querySelector('.sc').textContent = fmtScore(t, pd.type, pd.scores[id], lang);
           setTimeout(() => f.classList.add(i === 0 ? 'win' : 'lose'), 700 + i * 150);
         });
       });
-      setTimeout(() => { if (seq === my) { Sound.play('win'); confetti({ count: 90, duration: 2500 }); } }, 800);
-      const winners = Object.values(pd.winners).map(nm).join(', ');
-      Voice.say(t('g.winner') + ': ' + winners, lang);
+      say('v.duelWin');
+      setTimeout(() => { if (seq === my) { Sound.play('win'); Sound.play('applause'); confetti({ count: 90, duration: 2500 }); } }, 1100);
     }
   }
   function updateDuelReady() {
     S.players.forEach(p => { const f = $(`.fighter[data-f="${p.id}"]`); if (f) f.classList.toggle('ready', !!p.done); });
   }
 
+  const RESULT_SFX = { 'ev.jackpot': 'jackpot', 'ev.cellarLoss': 'stairs', 'ev.rats': 'rats', 'ev.poison': 'burp', 'ev.heirloom': 'sparkle',
+    'ev.haunt': 'ghost', 'ev.garden': 'birds', 'ev.vaultSolo': 'coins', 'ev.duelWin': 'coins', 'ev.cards': 'shuffle', 'ev.attic': 'shuffle',
+    'ev.read': 'scribble', 'ev.mirror': 'boing', 'ev.asleep': 'snore', 'ev.clover': 'sparkle', 'ev.trumpet': 'party', 'ev.share': 'coins', 'ev.feud': 'clang', 'ev.bonus': 'kaching', 'ev.empty': 'wahwah' };
   async function enterResults(my) {
     hideOverlay(); clearLogs();
     setClosed(S.closed);
     const pd = S.pd;
     layoutTokens(pd.final, 0);
+    say('v.results');
     await sleep(500);
     for (const rr of pd.rooms) {
       if (seq !== my) return;
@@ -550,7 +623,7 @@
       const lines = rr.lines;
       const max = S.rooms.length > 6 ? 2 : 3;
       roomEl.classList.add('show-log');
-      if (lines.some(l => l.k === 'ev.alarm')) { roomEl.classList.add('alarm'); Sound.play('alarm'); }
+      if (lines.some(l => l.k === 'ev.alarm')) { roomEl.classList.add('alarm'); Sound.play('alarm'); say('v.alarm'); }
       lines.slice(0, max).forEach((l, i) => {
         const div = document.createElement('div');
         div.className = l.a > 0 ? 'pos' : l.a < 0 ? 'neg' : '';
@@ -567,7 +640,8 @@
         else if (l.p && l.p.h) floater(l.pid, '🏺 ' + t('h.' + l.p.h), 'neutral');
         else if (l.k === 'ev.cards') floater(l.pid, '🃏 +' + l.p.n, 'neutral');
       });
-      Sound.play(lines.some(l => l.a > 0) ? 'coin' : lines.some(l => l.a < 0) ? 'lose' : 'pop');
+      const fxKey = lines.map(l => RESULT_SFX[l.k]).find(Boolean);
+      Sound.play(fxKey || (lines.some(l => l.a > 0) ? 'coin' : lines.some(l => l.a < 0) ? 'lose' : 'pop'));
       await sleep(Math.max(900, 6000 / Math.max(3, pd.rooms.length)));
       roomEl.classList.remove('hot');
     }
@@ -580,7 +654,7 @@
     for (const m of msgs) {
       if (seq !== my) return;
       phaseBanner(m);
-      if (m.startsWith('👻')) Sound.play('ghost'); else Sound.play('pop');
+      if (m.startsWith('👻')) { Sound.play('ghost'); say('v.ghost'); } else if (m.startsWith('✨')) { Sound.play('sparkle'); say('v.revived'); } else Sound.play('pop');
       await sleep(2200);
     }
   }
@@ -597,7 +671,7 @@
         <div class="vote-grid">${others.map((p, i) => `<div class="fighter" data-f="${p.id}" style="animation-delay:${i * 60}ms">${medal(p)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>
       </div>`);
       Sound.play('bell');
-      Voice.say(t('vq.' + pd.clause), lang);
+      say(['v.vote', 'vq.' + pd.clause]);
       updateVoteReady();
     } else {
       const counts = pd.counts || {};
@@ -606,10 +680,13 @@
         <div class="vq">${esc(t('vq.' + pd.clause))}</div>
         <div class="vote-grid">${others.map(p => `<div class="fighter ${p.id === pd.winner ? 'win' : 'lose'}" data-f="${p.id}">${medal(p)}<span class="nm">${esc(p.name)}</span><span class="votes">${'<i></i>'.repeat(counts[p.id] || 0)}</span></div>`).join('')}</div>
         ${w ? `<div class="spotlight"><div class="vsub">${esc(t('g.voteWinner'))}${pd.tie ? ' · ' + esc(t('g.voteTie')) : ''}</div>
-          <div class="nm">${esc(w.name)}</div><div class="amt ${pd.applied >= 0 ? 'pos' : 'neg'}">${signed(pd.applied)} ${esc(t('cur'))}</div></div>`
+          ${medal(w)}<div class="nm">${esc(w.name)}</div><div class="amt ${pd.applied >= 0 ? 'pos' : 'neg'}">${signed(pd.applied)} ${esc(t('cur'))}</div>
+          ${pd.clown ? `<div class="vsub clown-line">${esc(t('g.clownVote', { a: w.name }))}</div>` : ''}</div>`
           : `<div class="spotlight"><div class="vsub">${esc(t('g.noVotes'))}</div></div>`}
       </div>`);
-      if (w) { Sound.play(pd.applied >= 0 ? 'win' : 'lose'); if (pd.applied > 0) confetti({ coins: true, count: 70 }); Voice.say(w.name, lang); }
+      Sound.play('drum');
+      say('v.voteResult');
+      if (w) setTimeout(() => { if (seq !== my) return; Sound.play('crash'); Sound.play(pd.clown ? 'boing' : pd.applied >= 0 ? 'win' : 'wahwah'); if (pd.applied > 0) confetti({ coins: true, count: 70 }); if (pd.clown) Sound.play('applause'); }, 1200);
     }
   }
   function updateVoteReady() {
@@ -630,7 +707,7 @@
       <div class="vote-grid">${S.players.map((p, i) => `<div class="fighter" data-f="${p.id}" style="animation-delay:${i * 60}ms">${medal(p)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>
     </div>`);
     Sound.play('drum');
-    Voice.say(qs.map(q => t('g.who.' + q)).join(' '), lang);
+    say('v.finalvote');
     updateVoteReady();
   }
 
@@ -640,8 +717,9 @@
     const steps = S.pd.steps;
     showOverlay(`<div class="ov-inner ov-finale"><h1 class="display f-title">📜 ${esc(t('f.title'))}</h1><div class="f-stage" id="f-stage"></div></div>`);
     Sound.play('fanfare');
-    Voice.say(t('f.title'), lang);
-    await sleep(2400);
+    say('v.finale');
+    await sleep(4200);
+    let saidHeirlooms = false;
     for (const st of steps) {
       if (seq !== my) return;
       const stage = $('#f-stage');
@@ -661,7 +739,8 @@
             </div>`).join('')}</div>
           <div class="f-total" style="animation:pop-in .5s ${700 + st.items.length * 650}ms both">${esc(t('f.total'))}: <span class="${st.total >= 0 ? 'pos' : 'neg'}">${signed(st.total)}</span></div>
         </div>`;
-        st.items.forEach((it, i) => setTimeout(() => { if (seq === my) Sound.play(it.v < 0 ? 'ghost' : 'coin'); }, 600 + i * 650));
+        if (!saidHeirlooms) { saidHeirlooms = true; say('v.heirlooms'); }
+        st.items.forEach((it, i) => setTimeout(() => { if (seq === my) Sound.play(it.v < 0 ? 'ghost' : 'coins'); }, 600 + i * 650));
         wait = 2600 + st.items.length * 650;
       } else if (st.t === 'role') {
         const real = P(st.real);
@@ -677,26 +756,46 @@
         </div>`;
         Sound.play('drum');
         setTimeout(() => { if (seq === my) { Sound.play('stamp'); } }, 2200);
-        setTimeout(() => { if (seq === my) Sound.play(st.caught ? 'win' : 'alarm'); }, 3200);
-        setTimeout(() => { if (seq === my) Voice.say(t('f.real.' + st.role) + ' ' + real.name, lang); }, 1600);
+        setTimeout(() => { if (seq === my) { Sound.play(st.caught ? 'win' : 'alarm'); say(st.caught ? 'v.caught' : 'v.escaped'); } }, 3200);
+        say('v.real.' + st.role);
         wait = 7500;
+      } else if (st.t === 'seer') {
+        const p = P(st.pid);
+        say('v.seer');
+        stage.innerHTML = `<div class="f-step f-reveal">
+          <div style="animation:fade-in .1s 1.6s both">${medal(p)}</div><h2>🔮 ${esc(t('f.seer', { a: p.name }))}</h2>
+          <div class="f-verdict ${st.hits ? 'good' : 'bad'}" style="animation-delay:2.2s">${esc(t('f.seerHits', { n: st.hits }))}</div>
+        </div>`;
+        setTimeout(() => { if (seq === my) Sound.play('sparkle'); }, 1600);
+        wait = 5500;
+      } else if (st.t === 'clown') {
+        const p = P(st.pid);
+        say('v.clown');
+        stage.innerHTML = `<div class="f-step f-reveal">
+          <div style="animation:fade-in .1s 1.6s both">${medal(p)}</div><h2>🤡 ${esc(t('f.clown', { a: p.name }))}</h2>
+          <div class="f-verdict ${st.fooled ? 'good' : 'bad'}" style="animation-delay:2.2s">${esc(st.fooled ? t('f.clownFooled', { n: fmt(st.bonus, lang) }) : t('f.clownNot'))}</div>
+        </div>`;
+        setTimeout(() => { if (seq === my) { Sound.play('boing'); if (st.fooled) Sound.play('applause'); else Sound.play('wahwah'); } }, 1700);
+        wait = 5500;
       } else if (st.t === 'cat') {
         const p = P(st.pid);
+        say('v.cat');
         stage.innerHTML = `<div class="f-step f-reveal">
-          ${medal(p)}<h2>🐈‍⬛ ${esc(t('f.cat', { a: p.name }))}</h2>
+          <div style="animation:fade-in .1s 1.4s both">${medal(p)}</div><h2>🐈‍⬛ ${esc(t('f.cat', { a: p.name }))}</h2>
           <div class="f-verdict ${st.poorest ? 'good' : 'bad'}" style="animation-delay:1.2s">${esc(st.poorest ? t('f.catPoor') : t('f.catRich'))}</div>
         </div>`;
-        Sound.play('pop');
-        wait = 5000;
+        setTimeout(() => { if (seq === my) Sound.play('meow'); }, 1400);
+        wait = 5500;
       } else if (st.t === 'family') {
         stage.innerHTML = `<div class="f-step"><h2>${esc(t('f.family'))}</h2><div class="fam-list">${st.ranking.map((f, i) => `
           <div class="fam-card ${i === 0 ? 'best' : ''}" style="animation:rise .5s ${i * 200}ms both">
-            <b>${esc(t('fam.n', { n: f.id + 1 }))}</b><div class="ms">${f.members.map(id => (P(id) || {}).avatar).join('')}</div>
+            <b>${esc(t('fam.n', { n: f.id + 1 }))}</b><div class="ms">${f.members.map(id => medal(P(id), 'wsm')).join('')}</div>
             <div class="money">${fmt(f.sum, lang)}</div></div>`).join('')}</div>
           <div class="f-sub">${esc(t('f.familyBonus'))}</div></div>`;
-        Sound.play('win');
+        Sound.play('win'); say('v.family');
         wait = 5500;
       } else if (st.t === 'roles') {
+        say('v.roles');
         stage.innerHTML = `<div class="f-step"><h2>${esc(t('f.roles'))}</h2><div class="f-roles">${S.players.map((p, i) => `
           <div class="fighter" style="animation-delay:${i * 90}ms">${medal(p)}<span class="nm">${esc(p.name)}</span><span class="role">${D.ROLES[st.roles[p.id]].emoji} ${esc(t('role.' + st.roles[p.id]))}</span></div>`).join('')}</div></div>`;
         wait = 5500;
@@ -711,10 +810,10 @@
           <div class="f-actions"><button class="btn big blood" id="btn-again">${esc(t('f.again'))}</button></div>
         </div>`;
         $('#btn-again').addEventListener('click', () => conn.emit('host:restart'));
-        Sound.play('fanfare');
-        confetti({ count: 260, duration: 5000 });
-        setTimeout(() => confetti({ coins: true, count: 120, duration: 4500 }), 1200);
-        Voice.say(t('f.winner', { a: w.name }), lang);
+        say('v.winner');
+        Sound.play('drum');
+        setTimeout(() => { if (seq !== my) return; Sound.play('fanfare'); Sound.play('applause'); confetti({ count: 260, duration: 5000 }); }, 1500);
+        setTimeout(() => { if (seq === my) confetti({ coins: true, count: 120, duration: 4500 }); }, 2700);
         finaleSkip = null;
         return;
       }
@@ -727,5 +826,4 @@
   applyI18n();
   if (!sessionStorage.getItem('otto.host')) showScreen('start');
   else showScreen('start');
-  if (window.speechSynthesis) speechSynthesis.getVoices();
 })();

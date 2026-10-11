@@ -8,7 +8,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node scripts/simulate.js",
-    "docs": "node scripts/gen-docs.js"
+    "docs": "node scripts/gen-docs.js",
+    "voice": "node scripts/gen-voice.js"
   },
   "engines": {
     "node": ">=18"

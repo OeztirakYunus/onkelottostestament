@@ -38,7 +38,7 @@
   </div>
   <article class="doc parchment" id="doc"><p class="loading">…</p></article>
   <script>
-    const T = { de: { back: 'Startseite', rules: 'Regelwerk', clauses: '50 Klauseln' }, tr: { back: 'Ana sayfa', rules: 'Kurallar', clauses: '50 Madde' } };
+    const T = { de: { back: 'Startseite', rules: 'Regelwerk', clauses: '100 Klauseln' }, tr: { back: 'Ana sayfa', rules: 'Kurallar', clauses: '100 Madde' } };
     const params = new URLSearchParams(location.search);
     let lang = params.get('lang') || (location.pathname === '/kurallar' ? 'tr' : (localStorage.getItem('otto.lang') === 'tr' ? 'tr' : 'de'));
     let docName = params.get('doc') === 'clauses' ? 'clauses' : 'rules';

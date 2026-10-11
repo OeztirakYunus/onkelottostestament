@@ -15,14 +15,15 @@ const ROOT = path.join(__dirname, '..');
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json'
+  '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.webmanifest': 'application/manifest+json'
 };
 const ROUTES = { '/': 'public/index.html', '/host': 'public/host.html', '/play': 'public/play.html', '/regeln': 'public/rules.html', '/kurallar': 'public/rules.html' };
 
 function serveFile(res, file) {
   fs.stat(file, (err, st) => {
     if (err || !st.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Nicht gefunden'); }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+    const cache = /[\\/]voice[\\/]/.test(file) ? 'public, max-age=86400' : 'no-cache';
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': cache, 'Content-Length': st.size });
     fs.createReadStream(file).pipe(res);
   });
 }
@@ -31,6 +32,14 @@ const server = http.createServer((req, res) => {
   let url;
   try { url = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
   if (ROUTES[url]) return serveFile(res, path.join(ROOT, ROUTES[url]));
+  const pm = /^\/photo\/([A-Z]{4})\/(p[0-9a-f]{8})$/.exec(url);
+  if (pm) {
+    const g = games.get(pm[1]);
+    const ph = g && g.photos.get(pm[2]);
+    if (!ph) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': ph.type, 'Cache-Control': 'private, max-age=86400', 'Content-Length': ph.buf.length });
+    return res.end(ph.buf);
+  }
   let base = path.join(ROOT, 'public');
   if (url.startsWith('/shared/')) { base = path.join(ROOT, 'shared'); url = url.slice('/shared'.length); }
   const file = path.normalize(path.join(base, url));
@@ -66,6 +75,14 @@ function broadcast(g) {
 }
 function wire(g) {
   g.hosts = new Set();
+  g.onChat = (msg, recipients) => {
+    recipients.forEach(pid => {
+      const p = g.get(pid);
+      const c = p && p.socketId && clientsById.get(p.socketId);
+      if (c) c.send('chat', msg);
+    });
+  };
+  g.onWhisper = (w) => { for (const c of g.hosts) c.send('whisper', w); };
   g.onChange = () => {
     if (g._pending) return;
     g._pending = true;
@@ -98,7 +115,7 @@ wss.on('connection', (client) => {
     },
     'host:resume': (msg, ack) => {
       const g = games.get(String((msg && msg.code) || '').toUpperCase());
-      if (!g || g.hostToken !== (msg && msg.hostToken)) return ack({ error: 'nogame' });
+      if (!g || g.ended || g.hostToken !== (msg && msg.hostToken)) return ack({ error: 'nogame' });
       client.data = { code: g.code, host: true };
       g.hosts.add(client);
       g.lastHostSeen = Date.now();
@@ -118,11 +135,25 @@ wss.on('connection', (client) => {
     'host:start': () => { const g = hostGame(); if (g) g.start(); },
     'host:skip': () => { const g = hostGame(); if (g) g.skip(); },
     'host:restart': () => { const g = hostGame(); if (g) g.restart(); },
+    // Sitzung beenden: alle trennen, Spiel löschen
+    'host:end': () => {
+      const g = hostGame(); if (!g || g.ended) return;
+      g.ended = true;
+      const ranking = [...g.players].sort((a, b) => b.money - a.money)
+        .map(p => ({ id: p.id, name: p.name, avatar: p.avatar, color: p.color, photo: p.photo || 0, money: p.money, ghost: p.ghost }));
+      const msg = { code: g.code, ranking, started: g.phase !== 'lobby' };
+      g.players.forEach(p => { const c = p.socketId && clientsById.get(p.socketId); if (c) { c.send('ended', msg); c.data = {}; } p.socketId = null; });
+      for (const c of g.hosts) { c.send('ended', msg); c.data = {}; }
+      g.hosts.clear();
+      g.destroy();
+      // Fotos noch kurz behalten, damit der Endstand sie anzeigen kann
+      setTimeout(() => games.delete(g.code), 3 * 60 * 1000).unref();
+    },
 
     'player:join': (msg, ack) => {
       msg = msg || {};
       const g = games.get(String(msg.code || '').trim().toUpperCase());
-      if (!g) return ack({ error: 'nogame' });
+      if (!g || g.ended) return ack({ error: 'nogame' });
       let p = msg.token ? g.players.find(x => x.token === msg.token) : null;
       if (!p) {
         if (msg.rejoinOnly) return ack({ error: 'notoken' });
@@ -136,6 +167,7 @@ wss.on('connection', (client) => {
       if (msg.lang) p.lang = msg.lang === 'tr' ? 'tr' : 'de';
       client.data = { code: g.code, pid: p.id };
       ack({ ok: true, token: p.token, pid: p.id, code: g.code });
+      client.send('chatHistory', g.chatFor(p));
       g.changed();
     },
     'player:lang': (lang) => { const p = me(); if (p) { p.lang = lang === 'tr' ? 'tr' : 'de'; game().changed(); } },
@@ -143,6 +175,14 @@ wss.on('connection', (client) => {
       const g = game(), p = me();
       if (!g || !p || g.phase !== 'lobby') return;
       if (D.AVATARS.includes(av) && !g.players.some(x => x !== p && x.avatar === av)) { p.avatar = av; g.changed(); }
+    },
+    'player:photo': (dataUrl, ack) => { const g = game(), p = me(); ack(g && p ? g.setPhoto(p, dataUrl) : { error: 'nogame' }); },
+    'player:noPhoto': () => { const g = game(), p = me(); if (g && p) g.clearPhoto(p); },
+    'player:chat': (msg, ack) => {
+      const g = game(), p = me();
+      if (!g || !p || !msg) return ack({ error: 'nogame' });
+      const r = g.sendChat(p, msg.to, msg.text);
+      ack(r.error ? { error: r.error } : { ok: true });
     },
     'player:plan': (plan, ack) => { const g = game(), p = me(); ack(g && p ? (g.submitPlan(p, plan) || {}) : { error: 'nogame' }); },
     'player:duel': (score) => { const g = game(), p = me(); if (g && p) g.submitDuel(p, score); },
