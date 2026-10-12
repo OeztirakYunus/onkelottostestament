@@ -80,6 +80,11 @@ Her oda ödemesini yapar (aşağıdaki tabloya bakın). Ardından dağılıma ba
 
 „Sessizlik maddesi“ ya da „Mazeret kontrolü“ gibi maddelerde herkes telefondan oy verir. En çok oy alan kişi maddenin bonusunu ya da cezasını alır. Beraberlikte kura çekilir. Kimse kendine oy veremez.
 
+### Turlar arasında: Açık artırma ve sürpriz
+
+- Her **üç turda bir** bir **miras eşyası açık artırmaya** çıkar (bkz. „Miras eşyası açık artırması“).
+- 2. turdan itibaren her an bir **büyük sürpriz** patlayabilir (oyun başına en fazla üç, son turdan önce asla).
+
 ## Odalar
 
 | Oda | Etkisi |
@@ -183,8 +188,61 @@ Son turdan sonra:
 4. **Falcı** isabetleriyle birlikte açıklanır.
 5. **Aile soytarısı** açıklanır. Çoğunluğun ondan şüphelendiği her soru için +250 alır.
 6. **Kedi** açıklanır. En fakir oyuncuysa +400 alır.
-7. **Aile kollarında** en zengin ailenin her üyesi +100 alır.
-8. **Tüm roller** açılır ve ardından **kürsü** gelir.
+7. **Ailelerle** oynanıyorsa en zengin ailenin her üyesi +100 alır.
+8. **Otto Ödülleri:** Oyunun en büyük rezaletleri için en fazla sekiz eğlenceli ödül – örn. 🥀 *Ebedi kurban* (en çok soyulan), 💬 *Geveze*, 🍌 *Altın muz kabuğu*, 🍅 *Domatesçi*, 🎰 *Yılın kumarbazı*, 🐍 *Yılan* ya da 🔨 *Alışveriş bağımlısı*. Herkes ödüllerini telefonunda da görür.
+9. **Tüm roller** açılır ve ardından **kürsü** gelir.
+
+## Seyirciler: Bahis ve sabotaj
+
+Bir aile kavgasında **oynamayan** sadece izlemez:
+
+- **Bahis:** Duyuru ve oyun sırasında bir düellocuya 10 ile 200 Altın arasında bahis yaparsın. O kazanırsa yatırdığının **(rakip sayısı) katını** kazanırsın (ikili düelloda iki katı). Kaybederse para gider. Tüm bahisler televizyonda canlı görünür.
+- **Sabotaj:** Mini oyun sürerken **3 atış** hakkın var ve bir düellocuyu hedef alırsın:
+  - 🍅 **Domates** – telefonuna yapışır,
+  - 📳 **Sallantı** – ekranı titrer,
+  - 🌫️ **Sis** – her şey bulanıklaşır,
+  - 🙃 **Ters dönme** – ekranı bir anlığına baş aşağı olur.
+  
+  Televizyonda atışlar kurbana doğru uçar. Hayaletler sabote edebilir ama bahis oynayamaz.
+
+## Fotoğraf şakaları ve aranıyor afişi
+
+- **Kaybedenler süslenir:** Düello kaybeden ya da oylamada ceza alan bir tur boyunca portresinde **palyaço burnu**, **bıyık**, **gangster gözlüğü** ya da **tuvalet kâğıdı türbanı** taşır – televizyonda ve tüm telefonlarda.
+- **ARANIYOR:** 2. turdan itibaren plan başında televizyonda **en zengin mirasçının** afişi asılır. Bu turda onu ilk soyan (hırsız, fatura ya da kart çalma) **+50 ödül** daha alır.
+
+## Selfie düelloları
+
+Beş madde (📸) **selfie düellosudur**: Tüm insanlar telefonla maddenin konusuna uygun bir selfie çeker („Olabildiğince zengin bakın!“). Fotoğraflar televizyonda polaroid olarak görünür, aile en iyisini oylar (+100). Selfie profil fotoğrafının yerini almaz. İkiden az kişi selfie çekerse herkes arasında normal oylama yapılır.
+
+## Ticaret ve anlaşmalar
+
+Telefonun üstündeki **🤝** düğmesiyle istediğin zaman (lobi ve final hariç) **anlaşma** teklif edebilirsin:
+
+- **Ben ödüyorum**, **ben istiyorum**, **elimden bir kart veriyorum**,
+- ve/veya bir **söz**: „Gelecek tur kasaya girmeyeceğim“, „Sana karşı kart oynamayacağım“, „Asla sana karşı oy vermeyeceğim“, „Seninle aynı odaya gireceğim“, „Seni bir daha asla soymayacağım“ ya da **kendi metnin**.
+
+Karşı taraf **imzalar** ya da **reddeder**. İmzalanınca para ve kart hemen el değiştirir. Sözlerin tutulup tutulmadığını kimse kontrol etmez. Ama her taraf istediği zaman **🚨 Sözleşme ihlalini bildir**ebilir. O zaman diğeri televizyonda herkesin önünde **YILAN** ilan edilir, söz okunur ve portresinde bir tur boyunca 🐍 durur. Haksız yere bildiren mi? Onu masada konuşursunuz. Kişi başına en fazla 3 açık teklif.
+
+## Miras eşyası açık artırması
+
+Her üç turda bir, bir miras eşyası açık artırmaya çıkar. Herkes telefonda **gizlice** teklif verir, **en yüksek teklif** kazanır ve teklif ettiği parayı öder (eşitlikte kura). Eşyanın değeri gizlidir ve ancak finalde belli olur – **lanetli** de olabilir. Televizyonda teklifler küçükten büyüğe açılır, sonra tokmak iner: „Satıldı!“
+
+## Büyük sürprizler
+
+Bazen iki tur arasında hiç beklenmedik bir şey olur. Televizyon kocaman bir **BÜYÜK SÜRPRİZ!** gösterir:
+
+| Sürpriz | Ne olur |
+|---|---|
+| ⚰️ **Otto yaşıyor!** | Sadece ölü taklidi yapıyormuş. Otto herkesten %20 toplayıp toplamı eşit dağıtır. |
+| 🚔 **Vergi baskını!** | Herkes telefonda gizlice bir odaya saklanır. Müfettişler rastgele bir odayı basar: Orada saklanan %30 kaybeder. |
+| 📜 **İkinci vasiyet!** | En zengin 150 öder, en fakir (en fazla üç) kişi 150'şer alır. |
+| 🌋 **Deprem!** | Bütün miras eşyaları karışır ve yeni sahiplerine düşer. |
+| 🎭 **Rol değişimi!** | İki akraba gizlice rollerini değiştirir. Sadece o ikisi telefonda öğrenir. |
+| 🗝️ **Hazine avı!** | Herkes 9 saniye boyunca deli gibi „KAZ!“ düğmesine dokunur. En hızlı üç kişi 150, 100 ve 50 alır. |
+| 🦅 **Akbabalar geliyor!** | Bütün eldeki kartlar gider, herkes 2 yeni kart alır. |
+| 🤠 **Amerikalı kuzen!** | Teksaslı kuzen Billy payını ister: Herkes %10 öder. |
+
+Oyun başına en fazla üç sürpriz, hiçbiri iki kez gelmez.
 
 ## Oyuncu sayısı: 2–15
 
@@ -197,11 +255,33 @@ Son turdan sonra:
 | 7 | Ayrıca **falcı**. |
 | 8 | Ayrıca **aile soytarısı**. Buradan itibaren altı rolün hepsi oyunda. |
 | 9 | Konağa **tavan arası** ve **balo salonu** eklenir (8 oda). |
-| 10–15 | **Aile kolları**: yaklaşık 3 kişilik takımlar. Herkes kendisi için oynar ama en zengin aile sonunda bonus alır. Aile üyeleri dosyanda yazar. |
+
+## Aileler (serbestçe ayarlanır)
+
+Ev sahibi lobide ailelerle oynanıp oynanmayacağını belirler, hem de **her oyuncu sayısında**:
+
+| Ayar | Nasıl çalışır |
+|---|---|
+| **Kapalı** | Herkes kendi başına oynar. |
+| **Rastgele** | Oyun başlarken herkes ailelere eşit şekilde kurayla dağıtılır. |
+| **Kendin seç** | Herkes ailesini telefonundan seçer. Ev sahibi televizyonda birine (botlara da) dokunarak onu başka aileye alabilir. Seçmeyen en küçük aileye girer. |
+
+**2 ile 6 aile** vardır, her birinin kendi arması, rengi ve sloganı var:
+
+| Arma | Aile | Slogan |
+|---|---|---|
+| 🦷 | **Takma Diş Çetesi** | „Dişimizi sıkarız!“ |
+| 🥙 | **Kebap Klanı** | „Acı ama samimi.“ |
+| 🥿 | **Terlik Kahramanları** | „Rahat rahat zenginliğe.“ |
+| 🍯 | **Baklava Hanedanı** | „Tatlı, yapışkan, tehlikeli.“ |
+| 🦊 | **Miras Avcıları** | „Önce gülümse, sonra miras al.“ |
+| 🧦 | **Çorap Çetesi** | „Başkalarının sakladığını hep buluruz.“ |
+
+Oyun başlarken televizyon aileleri törenle tanıtır. Oyunda herkes ailesinin armasını taşır, bir **aile sohbeti** vardır ve sonunda **en zengin ailenin her üyesi +100** alır. Yine de sonunda tek bir kişi kazanır: Aile güzel ama para paradır.
 
 ## Gizli mesajlar (sohbet)
 
-Telefondaki **💬** düğmesiyle herkes herkese **özel** mesaj yazabilir: ittifak kur, yalan söyle, tehdit et, rüşvet ver. **Aile kollarında** (10 oyuncudan itibaren) sadece kendi ailenin okuyabildiği bir **aile sohbeti** de vardır.
+Telefondaki **💬** düğmesiyle herkes herkese **özel** mesaj yazabilir: ittifak kur, yalan söyle, tehdit et, rüşvet ver. **Ailelerle** oynanıyorsa sadece kendi ailenin okuyabildiği bir **aile sohbeti** de vardır.
 
 Televizyon **mesajların içeriğini asla göstermez**, ama **fısıldaşıldığını** belli eder: „Elif, Murat kişisinin kulağına bir şey fısıldıyor…“. Bu da güvensizliği garanti eder. Bot akrabalar da cevap verir, ama pek işe yarar şeyler söylemezler.
 
@@ -237,6 +317,6 @@ Botların adları örneğin **Ayşe Teyze**, **Mehmet Amca** ya da **Hüseyin De
 - **Falcı olarak:** Bildiklerini erkenden açık etme. Yoksa hedef olursun.
 - **Sohbeti kullan:** Kasa için gizli bir ittifak altın değerinde. Dayanıp dayanmayacağı ayrı bir soru.
 
-## 100 vasiyet maddesi
+## 105 vasiyet maddesi
 
 Tam liste **KLAUSELN.md** dosyasında ve tarayıcıda `http://localhost:3000/regeln` adresindeki kurallarda yer alıyor.

@@ -148,6 +148,19 @@
         case 'party': T(600, 0.45, { type: 'sawtooth', vol: 0.08, slide: 250 }); for (let i = 0; i < 12; i++) N(0.03, { vol: 0.2, freq: 3000 + Math.random() * 3000, type: 'highpass', delay: 0.3 + Math.random() * 0.6 }); break;
         case 'magnet': T(200, 0.8, { type: 'sine', vol: 0.12, slide: 600 }); setTimeout(() => this.play('coins'), 500); break;
         case 'heartbeat': T(60, 0.12, { vol: 0.5 }); T(55, 0.15, { vol: 0.4, delay: 0.18 }); break;
+        case 'splat': // Tomate klatscht
+          N(0.18, { vol: 0.8, freq: 900, sweep: -700 }); T(140, 0.18, { vol: 0.3, slide: -90 }); N(0.4, { vol: 0.25, freq: 2500, type: 'bandpass', q: 3, delay: 0.08 }); break;
+        case 'siren': // Polizeisirene der Steuerfahndung
+          for (let i = 0; i < 4; i++) { T(700, 0.38, { type: 'sawtooth', vol: 0.05, slide: 350, delay: i * 0.4 }); T(1050, 0.38, { type: 'sawtooth', vol: 0.04, slide: -350, delay: i * 0.4 + 0.2 }); } break;
+        case 'rumble': // Erdbeben
+          N(2.2, { vol: 1.0, freq: 120, sweep: -60 }); T(45, 2.0, { vol: 0.4, attack: 0.3 }); N(0.5, { vol: 0.3, freq: 2000, delay: 1.2, type: 'highpass' }); break;
+        case 'twist': // Dramatischer Plot-Twist-Akkord
+          [[196, 233, 294], [185, 220, 277], [175, 208, 262]].forEach((ch, i) => ch.forEach(f => T(f, i === 2 ? 1.4 : 0.35, { type: 'sawtooth', vol: 0.05, delay: i * 0.32 })));
+          T(55, 1.6, { vol: 0.35, delay: 0.64, attack: 0.05 }); N(0.9, { vol: 0.4, freq: 4000, type: 'highpass', delay: 0.64 }); break;
+        case 'yeehaw': T(500, 0.25, { type: 'sawtooth', vol: 0.07, slide: 500 }); T(1000, 0.5, { type: 'sawtooth', vol: 0.07, slide: -600, delay: 0.25 }); break;
+        case 'dig': N(0.12, { vol: 0.5, freq: 600, sweep: -300 }); break;
+        case 'vulture': for (let i = 0; i < 3; i++) T(1400, 0.22, { type: 'sawtooth', vol: 0.06, slide: -900, delay: i * 0.28 }); break;
+        case 'hiss': N(1.0, { vol: 0.35, freq: 6000, type: 'highpass', q: 0.7 }); break;
       }
     },
     meow() {
@@ -372,10 +385,20 @@
   function fmt(n, lang) { return Number(n || 0).toLocaleString(lang === 'tr' ? 'tr-TR' : 'de-DE'); }
 
   // Porträt-Medaillon: Foto, falls vorhanden, sonst Tiergesicht
+  // Foto-Streiche: Clownsnase, Schnurrbart, Gangster-Brille, Klopapier, Schlangen-Brandmal
+  const STACHE = '<svg viewBox="0 0 100 40" aria-hidden="true"><path d="M50 14c-6-10-18-12-27-6C15 13 9 22 2 18c3 12 17 18 30 14 9-3 14-9 18-12 4 3 9 9 18 12 13 4 27-2 30-14-7 4-13-5-21-10-9-6-21-4-27 6z" fill="#2b1a10"/></svg>';
+  function prankArt(kind) {
+    if (kind === 'nose') return '<span class="prank prank-nose"></span>';
+    if (kind === 'stache') return `<span class="prank prank-stache">${STACHE}</span>`;
+    if (kind === 'shades') return '<span class="prank prank-shades">🕶️</span>';
+    if (kind === 'tp') return '<span class="prank prank-tp">🧻</span>';
+    if (kind === 'snake') return '<span class="prank prank-snake">🐍</span>';
+    return '';
+  }
   function medal(p, code, cls = '') {
     if (!p) return '';
     const inner = p.photo && code ? `<img src="/photo/${code}/${p.id}?v=${p.photo}" alt="" draggable="false">` : esc(p.avatar);
-    return `<div class="medal ${p.ghost ? 'ghost' : ''} ${p.photo ? 'has-photo' : ''} ${cls}" style="--c:${p.color}">${inner}</div>`;
+    return `<div class="medal ${p.ghost ? 'ghost' : ''} ${p.photo ? 'has-photo' : ''} ${p.prank ? 'pranked' : ''} ${cls}" style="--c:${p.color}">${inner}${p.prank ? prankArt(p.prank) : ''}</div>`;
   }
 
   // Deterministischer Zufall (gleiche Aufgaben für alle Duellanten)
@@ -420,5 +443,5 @@
     }
   }
 
-  window.OTTO = { D, I, Connection, Sound, Music, Voice, confetti, esc, $, $$, sleep, fmt, Clock, animateNumber, medal, rng, fmtScore };
+  window.OTTO = { D, I, Connection, Sound, Music, Voice, confetti, esc, $, $$, sleep, fmt, Clock, animateNumber, medal, prankArt, rng, fmtScore };
 })();

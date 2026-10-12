@@ -149,8 +149,11 @@
     $('#cam-ok').classList.toggle('hidden', !hasShot);
   }
 
-  async function openPhoto(onDone) {
+  async function openPhoto(onDone, opts = {}) {
     Photo.onDone = onDone;
+    Photo.profile = opts.profile !== false;
+    $('#photo-title').textContent = t(opts.title || 'p.photoTitle');
+    $('#photo-hint').textContent = t(opts.hint || 'p.photoHint');
     Photo.raw = null;
     $('#photo').classList.remove('hidden');
     renderFilterRow();
@@ -216,10 +219,12 @@
     cv.getContext('2d').drawImage($('#cam-shot'), 0, 0, 224, 224);
     let q = 0.82, data = cv.toDataURL('image/jpeg', q);
     while (data.length > 160000 && q > 0.4) { q -= 0.1; data = cv.toDataURL('image/jpeg', q); }
-    Photo.data = data;
-    Photo.mode = 'photo';
-    store.set('otto.photo', data);
-    store.set('otto.mode', 'photo');
+    if (Photo.profile) { // Selfies für Abstimmungen ersetzen nicht das Profilbild
+      Photo.data = data;
+      Photo.mode = 'photo';
+      store.set('otto.photo', data);
+      store.set('otto.mode', 'photo');
+    }
     Sound.play('sparkle'); buzz([20, 30, 20]);
     closePhoto();
     if (Photo.onDone) Photo.onDone(data);
@@ -371,7 +376,7 @@
   $('#chat-back').addEventListener('click', () => { if (Chat.thread) { Chat.thread = null; renderChat(); } else closeChat(); });
 
   function threadName(th) {
-    if (th === 'fam') return t('c.family', { n: (ME.family || 0) + 1 });
+    if (th === 'fam') return famLabel(ME.family || 0);
     const p = P(th); return p ? p.name : '?';
   }
   function renderChat() {
@@ -388,7 +393,7 @@
       threads.sort((a, b) => ((last(b) || {}).ts || 0) - ((last(a) || {}).ts || 0) || (a === 'fam' ? -1 : 0));
       body.innerHTML = `<div class="thread-list">${threads.map(th => {
         const lm = last(th), un = Chat.unread[th] || 0;
-        const icon = th === 'fam' ? `<div class="medal fam-medal">👨‍👩‍👧</div>` : medal(P(th));
+        const icon = th === 'fam' ? `<div class="medal fam-medal" style="--c:${D.FAMILIES[ME.family || 0].color}">${D.FAMILIES[ME.family || 0].emoji}</div>` : medal(P(th));
         return `<button class="thread" data-th="${th}">${icon}<span class="tt"><b>${esc(threadName(th))}</b><small>${lm ? esc((lm.from === ME.id ? t('c.you') + ': ' : '') + lm.text) : '&nbsp;'}</small></span>${un ? `<i class="badge">${un}</i>` : ''}</button>`;
       }).join('')}</div>`;
       $$('.thread', body).forEach(b => b.onclick = () => { Chat.thread = b.dataset.th; renderChat(); setTimeout(() => $('#chat-input').focus(), 50); });
@@ -430,11 +435,13 @@
 
     const pd = S.pd || {};
     let extra = '';
-    if (S.phase === 'lobby') extra = S.players.map(p => p.avatar + p.photo).join('');
+    if (S.phase === 'lobby') extra = S.players.map(p => p.avatar + p.photo + p.famPick).join('') + S.settings.famMode + S.settings.famCount;
     if (S.phase === 'plan') extra = (ME.plan && !editing ? 'S' : 'E') + (ME.ghost ? 'g' : '');
-    if (S.phase === 'vote') extra = ME.vote ? 'v' : '';
+    if (S.phase === 'vote') extra = (ME.vote ? 'v' : '') + (ME.selfie ? 's' : '');
+    if (S.phase === 'twist') extra = (ME.twistIn !== undefined ? 't' : '') + (ME.roleChanged ? 'r' : '');
+    if (S.phase === 'auction') extra = ME.bid !== undefined ? 'b' + ME.bid : '';
     if (S.phase === 'finalvote') extra = ME.finalVote ? 'f' : '';
-    if (S.phase === 'duel') extra = ME.duelScore !== undefined ? 'd' : '';
+    if (S.phase === 'duel') extra = (ME.duelScore !== undefined ? 'd' : '') + (ME.bet ? 'b' : '');
     if (S.phase === 'finale') extra = showRank ? 'r' : '';
     const key = [S.phase, S.round, pd.stage || '', extra, lang].join('|');
     if (key === viewKey) return;
@@ -456,6 +463,8 @@
       case 'vote': return vVote();
       case 'finalvote': return vFinalVote();
       case 'finale': return vFinale();
+      case 'twist': return vTwist();
+      case 'auction': return vAuction();
     }
   }
 
@@ -463,7 +472,7 @@
   (function loop() {
     requestAnimationFrame(loop);
     if (!S) return;
-    const active = S.endsAt && (['plan', 'vote', 'finalvote'].includes(S.phase) || (S.phase === 'duel' && S.pd.stage === 'play'));
+    const active = S.endsAt && (['plan', 'vote', 'finalvote'].includes(S.phase) || (S.phase === 'duel' && S.pd.stage === 'play') || (S.phase === 'twist' && S.pd.stage === 'act') || (S.phase === 'auction' && S.pd.stage === 'bid'));
     const left = active ? Clock.left(S.endsAt) : 0;
     $('#pbar-fill').style.width = active ? (100 * left / phaseTotal).toFixed(1) + '%' : '0%';
     $('#pbar').classList.toggle('urgent', active && left < 5000);
@@ -477,12 +486,32 @@
     view.innerHTML = `
       <div class="wait-hero">${medal(me, 'huge')}<div class="h2">${esc(ME.name)}</div><p class="sub">${esc(t('p.waiting'))}</p>
         <p class="center"><button class="btn" id="btn-newphoto">📸 ${esc(me && me.photo ? t('p.retake') : t('p.takePhoto'))}</button></p></div>
+      ${famPicker(me)}
       <div class="card-box lobby-av ${me && me.photo ? 'hidden' : ''}"><div class="section-title">${esc(t('p.avatar'))}</div><div class="av-grid" id="lobby-av"></div></div>
       <p class="center"><button class="btn ghosty" id="btn-leave">${esc(t('p.leave'))}</button></p>`;
     buildAvatarGrid($('#lobby-av'), taken, (a) => { store.set('otto.avatar', a); conn.emit('player:avatar', a); });
     $('#btn-newphoto').onclick = () => openPhoto((data) => conn.emit('player:photo', data, (r) => { if (r && r.ok) toast(t('p.photoSaved')); }));
     $('#btn-leave').onclick = () => { conn.emit('player:leave'); store.del('otto.player'); showJoin(''); };
+    $$('[data-fam]', view).forEach(b => b.onclick = () => {
+      const f = +b.dataset.fam;
+      conn.emit('player:family', me && me.famPick === f ? null : f);
+      Sound.play('stamp'); buzz(20);
+    });
   }
+
+  // Familienwahl in der Lobby
+  function famPicker(me) {
+    const { famMode, famCount } = S.settings;
+    if (famMode === 'random') return `<div class="card-box fam-box"><div class="section-title"><span>👨‍👩‍👧 ${esc(t('h.families'))}</span></div><p class="sub" style="margin:0">${esc(t('p.famRandom'))}</p></div>`;
+    if (famMode !== 'choose') return '';
+    return `<div class="card-box fam-box"><div class="section-title"><span>👨‍👩‍👧 ${esc(t('p.famChoose'))}</span></div>
+      <div class="fam-pick">${D.FAMILIES.slice(0, famCount).map(f => {
+        const n = S.players.filter(p => p.famPick === f.id).length;
+        return `<button class="fam-opt ${me && me.famPick === f.id ? 'on' : ''}" data-fam="${f.id}" style="--fc:${f.color}">
+          <span class="fam-crest">${f.emoji}</span><span class="fn">${esc(t('fam.' + f.id))}</span><small>${esc(t('p.famMembers', { n }))}</small></button>`;
+      }).join('')}</div></div>`;
+  }
+  const famLabel = (id) => D.FAMILIES[id].emoji + ' ' + t('fam.' + id);
 
   function roleCard() {
     const r = ME.role || 'relative';
@@ -495,7 +524,7 @@
             <div class="re">${D.ROLES[r].emoji}</div>
             <h3>${esc(t('role.' + r))}</h3>
             <p>${esc(t('roled.' + r))}</p>
-            ${fam ? `<p style="margin-top:.8rem"><b>${esc(t('p.family'))}:</b></p><div class="fam-row">${fam.members.map(id => medal(P(id), 'tiny')).join('')}</div>` : ''}
+            ${fam ? `<p style="margin-top:.8rem"><b>${esc(t('p.family'))}:</b> ${esc(famLabel(fam.id))}</p><div class="fam-row">${fam.members.map(id => medal(P(id), 'tiny')).join('')}</div>` : ''}
           </div>
         </div>
       </div>`;
@@ -558,6 +587,7 @@
     }
     view.innerHTML = `
       ${ME.ghost ? `<div class="ghost-note">👻 ${esc(t('p.ghostInfo'))}</div>` : ''}
+      ${wantedNote()}
       <div class="section-title"><span>${esc(ME.ghost ? t('p.haunt') : t('p.chooseRoom'))}</span></div>
       <div class="rooms">${roomsHtml}</div>
       ${cardsHtml}
@@ -622,7 +652,7 @@
 
   /* --- Auswahlblätter --- */
   function openSheet(html) { $('#sheet-body').innerHTML = html; $('#sheet').classList.remove('hidden'); }
-  function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheet-body').innerHTML = ''; }
+  function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheet-body').innerHTML = ''; Deals.open = false; }
   function pickPlayer(title, list, cb) {
     openSheet(`<h3>${esc(title)}</h3><div class="pick-list">${list.map(p => `<button class="pick" data-pid="${p.id}">${medal(p)}<span class="pn">${esc(p.name)}</span></button>`).join('')}</div>
       <button class="btn ghosty" data-close style="color:var(--ink)">${esc(t('p.cancel'))}</button>`);
@@ -646,7 +676,7 @@
       <h3>📂 ${esc(t('p.dossier'))}</h3>
       <div class="role-big"><span class="e">${D.ROLES[r].emoji}</span><div><b>${esc(t('role.' + r))}</b><div>${esc(t('roled.' + r))}</div>
         ${ME.catLives != null ? `<small>🐾 ${esc(t('p.catLives', { n: ME.catLives }))}</small>` : ''}</div></div>
-      ${fam ? `<h4>${esc(t('p.family'))}</h4>${fam.members.map(id => { const p = P(id); return p ? `<div class="row">${medal(p, 'tiny')}<div><b>${esc(p.name)}</b></div></div>` : ''; }).join('')}` : ''}
+      ${fam ? `<h4>${esc(t('p.family'))}: ${esc(famLabel(fam.id))}</h4>${fam.members.map(id => { const p = P(id); return p ? `<div class="row">${medal(p, 'tiny')}<div><b>${esc(p.name)}</b></div></div>` : ''; }).join('')}` : ''}
       <h4>${esc(t('p.known'))}</h4>
       ${known.length ? known.map(([pid, role]) => { const p = P(pid); return p ? `<div class="row">${medal(p, 'tiny')}<div><b>${esc(p.name)}</b><small>${D.ROLES[role].emoji} ${esc(t('role.' + role))}</small></div></div>` : ''; }).join('') : `<p>${esc(t('p.nothingKnown'))}</p>`}
       <h4>${esc(t('p.heirlooms'))}</h4>
@@ -661,7 +691,7 @@
   function vDuel() {
     const pd = S.pd;
     const inDuel = pd.pids.includes(ME.id);
-    if (!inDuel) return vLookTV('⚔️', `<p class="sub center">${esc(t('p.duelWatch'))}</p>`);
+    if (!inDuel) return vSpectate(pd);
     const head = `<div class="duel-head"><div class="dn">${D.DUELS[pd.type].emoji} ${esc(t('duel.' + pd.type))}</div><p>${esc(t('dueld.' + pd.type))}</p>${pd.reverse ? `<p>🙃 ${esc(t('g.duelReverse'))}</p>` : ''}</div>`;
     if (pd.stage === 'intro') {
       const g = pd.groups.find(x => x.pids.includes(ME.id));
@@ -686,6 +716,8 @@
       view.innerHTML = `${head}<div class="duel-res"><div class="e">${won ? '👑' : '💀'}</div><div class="t">${esc(won ? t('p.youWon') : t('p.youLost'))}</div>
         <p>${esc(fmtScore(t, pd.type, sc, lang))}</p>${answer}</div>`;
       if (won) { Sound.play('win'); confetti({ count: 80, duration: 2200 }); buzz([50, 50, 150]); } else { Sound.play('wahwah'); buzz(200); }
+      const pr = (pd.pranked || []).find(x => x.pid === ME.id);
+      if (pr) view.insertAdjacentHTML('beforeend', `<div class="secret parchment prank-note">🤡 ${esc(t('p.prankMe', { x: t('prank.' + pr.kind) }))}</div>`);
     }
   }
   function sendScore(v, text) {
@@ -1060,11 +1092,15 @@
   /* ================= Abstimmung ================= */
   function vVote() {
     const pd = S.pd;
+    if (pd.stage === 'selfie') return vSelfie(pd);
     if (pd.stage === 'vote') {
-      const list = S.players.filter(p => p.id !== ME.id);
-      view.innerHTML = `<div class="h2 center">🗳️ ${esc(t('vq.' + pd.clause))}</div>
+      const cands = pd.candidates;
+      const list = S.players.filter(p => p.id !== ME.id && (!cands || cands.includes(p.id)));
+      const face = (p) => cands ? `<img class="selfie-img" src="/selfie/${S.code}/${p.id}?r=${pd.selfieRound}" alt="">` : medal(p);
+      view.innerHTML = `<div class="h2 center">${cands ? '📸' : '🗳️'} ${esc(t('vq.' + pd.clause))}</div>
         <p class="sub center">${pd.amount > 0 ? '+' : '−'}${fmt(Math.abs(pd.amount), lang)} ${esc(t('cur'))}</p>
-        <div class="vote-list">${list.map(p => `<button class="pick ${ME.vote === p.id ? 'on' : ''}" data-pid="${p.id}">${medal(p)}<span class="pn">${esc(p.name)}</span></button>`).join('')}</div>
+        <div class="vote-list ${cands ? 'selfie-list' : ''}">${list.map(p => `<button class="pick ${ME.vote === p.id ? 'on' : ''}" data-pid="${p.id}">${face(p)}<span class="pn">${esc(p.name)}</span></button>`).join('')}</div>
+
         ${ME.vote ? `<p class="center sub" style="margin-top:1rem">✅ ${esc(t('p.voted'))}</p>` : ''}`;
       $$('.pick', view).forEach(b => b.onclick = () => {
         conn.emit('player:vote', b.dataset.pid);
@@ -1114,22 +1150,347 @@
     const me = rk[idx];
     view.innerHTML = `<div class="final-rank card-box">${medal(P(ME.id), 'huge')}<div class="sub">${esc(t('p.end'))}</div><div class="rn">${esc(t('p.rank', { n: idx + 1 }))}</div>
       <span class="money">${fmt(me ? me.money : 0, lang)}</span><p class="sub" style="margin-top:1rem">${D.ROLES[ME.role].emoji} ${esc(t('role.' + ME.role))}</p></div>
+      ${myAwards()}
       <div class="lines">${rk.map((r, i) => { const p = P(r.pid); return p ? `<div class="rank-line">${i + 1}. ${medal(p, 'tiny')} ${esc(p.name)} · ${fmt(r.money, lang)}</div>` : ''; }).join('')}</div>
       <p class="center sub" style="margin-top:1.4rem">${esc(t('p.thanks'))}</p>`;
     if (idx === 0) { confetti({ count: 200 }); Sound.play('fanfare'); }
+  }
+
+  /* ================= Gesucht & Streiche ================= */
+  function wantedNote() {
+    const w = S.pd && S.pd.wanted;
+    if (!w || !P(w)) return '';
+    if (w === ME.id) return `<div class="wanted-note me">${esc(t('p.wantedMe'))}</div>`;
+    return `<div class="wanted-note">${medal(P(w), 'tiny')}<span>${esc(t('p.wantedOther', { a: P(w).name }))}</span></div>`;
+  }
+  let lastPrank = null;
+  conn.on('state', (d) => {
+    const me = d.me && d.players.find(p => p.id === d.me.id);
+    const pr = me ? me.prank : null;
+    if (pr && pr !== lastPrank && d.phase !== 'lobby') { toast('🤡 ' + t('p.prankMe', { x: t('prank.' + pr) }), 4000); Sound.play('boing'); buzz([30, 60, 30]); }
+    lastPrank = pr;
+  });
+
+  /* ================= Zuschauer: Wetten & Sabotage ================= */
+  let betDraft = { on: null, amount: 20 };
+  let sabTarget = null;
+  function vSpectate(pd) {
+    const duelists = pd.pids.map(P).filter(Boolean);
+    const head = `<div class="duel-head"><div class="dn">${D.DUELS[pd.type].emoji} ${esc(t('duel.' + pd.type))}</div><p>${esc(t('p.spectator'))}</p></div>`;
+    if (pd.stage === 'result') {
+      const br = (pd.betResults || []).find(b => b.pid === ME.id);
+      view.innerHTML = `${head}${br ? `<div class="duel-res"><div class="e">${br.delta > 0 ? '🎰' : '💸'}</div><div class="t ${br.delta > 0 ? 'pos' : 'neg'}">${esc(br.delta > 0 ? t('p.betWon', { n: br.delta }) : t('p.betLost', { n: -br.delta }))}</div></div>` : ''}<div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`;
+      if (br) { if (br.delta > 0) { Sound.play('jackpot'); confetti({ count: 60 }); buzz([40, 40, 100]); } else { Sound.play('wahwah'); buzz(150); } }
+      return;
+    }
+    let betHtml = '';
+    if (ME.ghost) betHtml = '';
+    else if (ME.bet) {
+      const on = P(ME.bet.on);
+      betHtml = `<div class="bet-box card-box placed"><div class="section-title"><span>${esc(t('p.betTitle'))}</span></div><div class="bet-placed">${on ? medal(on, 'tiny') : ''} ${esc(t('p.betPlaced', { n: fmt(ME.bet.amount, lang), a: on ? on.name : '?' }))}</div></div>`;
+    } else if (ME.money < 10) betHtml = `<p class="sub center">${esc(t('p.betNoMoney'))}</p>`;
+    else {
+      if (!pd.pids.includes(betDraft.on)) betDraft.on = null;
+      const amounts = [10, 20, 50, 100, 200].filter(a => a <= ME.money);
+      if (!amounts.includes(betDraft.amount)) betDraft.amount = amounts[Math.min(1, amounts.length - 1)];
+      betHtml = `<div class="bet-box card-box"><div class="section-title"><span>${esc(t('p.betTitle'))}</span><small>${esc(t('p.betOn'))}</small></div>
+        <div class="bet-who">${duelists.map(p => `<button class="pick ${betDraft.on === p.id ? 'on' : ''}" data-bet="${p.id}">${medal(p)}<span class="pn">${esc(p.name)}</span></button>`).join('')}</div>
+        <div class="chip-row">${amounts.map(a => `<button class="chip ${betDraft.amount === a ? 'on' : ''}" data-amt="${a}">🪙 ${fmt(a, lang)}</button>`).join('')}</div>
+        <button class="btn big blood" id="bet-go">${esc(t('p.betBtn'))}</button></div>`;
+    }
+    let sabHtml = '';
+    if (pd.stage === 'play') {
+      if (!pd.pids.includes(sabTarget)) sabTarget = pd.pids[0];
+      const left = ME.sabLeft;
+      vSpectate.left = left;
+      sabHtml = `<div class="sab-box card-box"><div class="section-title"><span>${esc(t('p.sabTitle'))}</span><small>${esc(left > 0 ? t('p.sabHint', { n: left }) : t('p.sabEmpty'))}</small></div>
+        <div class="bet-who sab-who">${duelists.map(p => `<button class="pick ${sabTarget === p.id ? 'on' : ''}" data-sabt="${p.id}">${medal(p)}<span class="pn">${esc(p.name)}</span></button>`).join('')}</div>
+        <div class="sab-btns">${Object.keys(D.SABOTAGE).map(k => `<button class="sab-btn" data-sab="${k}" ${left > 0 ? '' : 'disabled'}><span>${D.SABOTAGE[k].emoji}</span><small>${esc(t('sab.' + k))}</small></button>`).join('')}</div></div>`;
+    }
+    view.innerHTML = `${head}${betHtml}${sabHtml}${pd.stage === 'intro' ? `<div class="look-tv">📺 ${esc(t('p.duelWatch'))}</div>` : ''}`;
+    $$('[data-bet]', view).forEach(b => b.onclick = () => { betDraft.on = b.dataset.bet; $$('[data-bet]', view).forEach(x => x.classList.toggle('on', x === b)); Sound.play('pop'); buzz(10); });
+    $$('[data-amt]', view).forEach(b => b.onclick = () => { betDraft.amount = +b.dataset.amt; $$('[data-amt]', view).forEach(x => x.classList.toggle('on', x === b)); Sound.play('coin'); buzz(10); });
+    const go = $('#bet-go');
+    if (go) go.onclick = () => {
+      if (!betDraft.on) { toast(t('p.betOn')); buzz(80); return; }
+      go.disabled = true;
+      conn.emit('player:bet', { on: betDraft.on, amount: betDraft.amount }, (r) => { go.disabled = false; if (r && r.ok) { Sound.play('kaching'); buzz([20, 30, 20]); } else toast('⚠️'); });
+    };
+    $$('[data-sabt]', view).forEach(b => b.onclick = () => { sabTarget = b.dataset.sabt; $$('[data-sabt]', view).forEach(x => x.classList.toggle('on', x === b)); Sound.play('pop'); });
+    $$('[data-sab]', view).forEach(b => b.onclick = () => {
+      if (!sabTarget) return;
+      b.classList.remove('thrown'); void b.offsetWidth; b.classList.add('thrown');
+      conn.emit('player:sabotage', { to: sabTarget, kind: b.dataset.sab }, (r) => {
+        if (r && r.ok) {
+          Sound.play(b.dataset.sab === 'tomato' ? 'splat' : 'whoosh'); buzz(30);
+          const left = Math.max(0, (vSpectate.left != null ? vSpectate.left : ME.sabLeft) - 1);
+          vSpectate.left = left;
+          const hint = $('.sab-box .section-title small'); if (hint) hint.textContent = left > 0 ? t('p.sabHint', { n: left }) : t('p.sabEmpty');
+          if (!left) $$('[data-sab]', view).forEach(x => { x.disabled = true; });
+        } else if (r && r.error === 'empty') toast(t('p.sabEmpty'));
+      });
+    });
+  }
+
+  // Ich werde sabotiert, während ich spiele
+  conn.on('sabotaged', (s) => {
+    if (!S || S.phase !== 'duel' || S.pd.stage !== 'play') return;
+    const from = P(s.from);
+    toast(`${D.SABOTAGE[s.kind].emoji} ${t('p.sabGot', { a: from ? from.name : '?', x: t('sab.' + s.kind) })}`, 2200);
+    const layer = $('#sab-layer');
+    if (s.kind === 'tomato') {
+      const el = document.createElement('div');
+      el.className = 'splat';
+      el.style.left = (10 + Math.random() * 60) + '%'; el.style.top = (20 + Math.random() * 50) + '%';
+      el.innerHTML = '<span>🍅</span>';
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), 3200);
+      Sound.play('splat'); buzz([60, 30, 60]);
+    } else {
+      const cls = 'sab-' + s.kind;
+      document.body.classList.remove(cls); void document.body.offsetWidth; document.body.classList.add(cls);
+      clearTimeout(vSpectate['tm' + s.kind]);
+      vSpectate['tm' + s.kind] = setTimeout(() => document.body.classList.remove(cls), s.kind === 'flip' ? 2600 : 3000);
+      Sound.play(s.kind === 'quake' ? 'rumble' : s.kind === 'fog' ? 'stink' : 'boing'); buzz(s.kind === 'quake' ? [80, 40, 80, 40, 80] : 60);
+    }
+  });
+
+  /* ================= Selfie-Duell ================= */
+  function vSelfie(pd) {
+    if (ME.selfie) {
+      view.innerHTML = `<div class="big-emoji">🤳</div><div class="h2 center">${esc(t('p.selfieSent'))}</div><div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`;
+      return;
+    }
+    view.innerHTML = `<div class="clause-paper parchment"><b>${esc(t('p.selfieTitle'))}</b><p>${esc(t('clause.' + pd.clause))}</p></div>
+      <p class="sub center">${esc(t('p.selfieHint'))}</p>
+      <div class="sticky-cta"><button class="btn big blood" id="btn-selfie">${esc(t('p.selfieTake'))}</button></div>`;
+    $('#btn-selfie').onclick = () => openPhoto((data) => {
+      conn.emit('player:selfie', data, (r) => { if (r && r.ok) { Sound.play('shutter'); buzz([20, 40, 20]); } else toast('⚠️'); });
+    }, { profile: false, title: 'p.selfieTitle', hint: 'vq.' + pd.clause });
+    buzz([40, 40, 40]);
+  }
+
+  /* ================= Plot-Twist ================= */
+  let tapState = null;
+  function vTwist() {
+    const pd = S.pd, tw = D.TWISTS[pd.type] || { emoji: '🌀' };
+    const head = `<div class="twist-head"><div class="tw-badge">${esc(t('h.twist'))}</div><div class="tw-e">${tw.emoji}</div><div class="h2 center">${esc(t('twist.' + pd.type))}</div><p class="sub center">${esc(t('twistd.' + pd.type))}</p></div>`;
+    if (tapState && (pd.stage !== 'act' || pd.type !== 'treasure_hunt')) { tapState.alive = false; tapState = null; }
+    if (pd.stage === 'act' && pd.type === 'tax_raid') {
+      if (ME.twistIn !== undefined) { view.innerHTML = `${head}<div class="secret parchment">🫣 ${esc(t('p.twistHidden', { r: ME.twistIn }))}</div><div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`; return; }
+      view.innerHTML = `${head}<div class="section-title"><span>${esc(t('p.twistHide'))}</span></div><div class="rooms hide-rooms">${(pd.rooms || S.rooms).map(r => `<button class="room-btn" data-room="${r}" style="--tone:${D.ROOMS[r].tone}"><span class="re">${D.ROOMS[r].emoji}</span><span class="rn">${esc(t('room.' + r))}</span></button>`).join('')}</div>`;
+      $$('[data-room]', view).forEach(b => b.onclick = () => { conn.emit('player:twist', b.dataset.room); Sound.play('stairs'); buzz(30); });
+      buzz([100, 50, 100]);
+      return;
+    }
+    if (pd.stage === 'act' && pd.type === 'treasure_hunt') {
+      if (ME.ghost) { view.innerHTML = `${head}<div class="look-tv">👻 ${esc(t('p.twistWatch'))}</div>`; return; }
+      if (ME.twistIn !== undefined) { view.innerHTML = `${head}<div class="duel-res"><div class="e">⛏️</div><div class="t">${esc(t('p.twistTaps', { n: ME.twistIn }))}</div></div><div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`; return; }
+      if (tapState && tapState.alive) return;
+      tapState = { n: 0, alive: true };
+      const st = tapState;
+      view.innerHTML = `<div class="twist-head small"><div class="tw-e">${tw.emoji}</div><div class="h2 center">${esc(t('p.twistTapHint'))}</div></div>
+        <button class="tap-zone dig" id="dig">${esc(t('p.twistTap'))}</button><div class="tap-count" id="digc">0</div><p class="center sub" id="digt"></p>`;
+      const btn = $('#dig');
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); if (!st.alive) return;
+        st.n++; $('#digc').textContent = st.n; Sound.play('dig'); buzz(6);
+        if (st.n % 10 === 0) { const s = document.createElement('span'); s.className = 'dirt'; s.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px'); s.textContent = ['🪙', '💎', '🦴', '🥔'][Math.floor(Math.random() * 4)]; btn.appendChild(s); setTimeout(() => s.remove(), 900); }
+      });
+      const send = () => { if (!st.alive) return; st.alive = false; btn.disabled = true; conn.emit('player:twist', st.n); };
+      (function tick() {
+        if (!st.alive) return;
+        const l = Clock.left(S.endsAt);
+        const el = $('#digt'); if (el) el.textContent = (l / 1000).toFixed(1) + ' s';
+        if (l <= 700) return send();
+        requestAnimationFrame(tick);
+      })();
+      buzz(80);
+      return;
+    }
+    if (pd.stage === 'result') {
+      const mine = (pd.lines || []);
+      view.innerHTML = `${head}
+        ${pd.raid ? `<p class="center tw-raid">🚔 ${esc(t('tw.raided', { r: pd.raid }))}</p>` : ''}
+        <div class="lines">${mine.map((l, i) => `<div class="${l.pid === ME.id ? 'me ' : ''}${l.a > 0 ? 'pos' : l.a < 0 ? 'neg' : ''}" style="animation-delay:${i * 150}ms">${esc(t(l.k, l.p))}</div>`).join('')}</div>
+        ${ME.roleChanged ? `<div class="secret parchment role-swap"><div>🎭 ${esc(t('p.roleChanged'))}</div><div class="re">${D.ROLES[ME.role].emoji}</div><b>${esc(t('role.' + ME.role))}</b><p>${esc(t('roled.' + ME.role))}</p></div>` : ''}
+        <div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`;
+      const mineLine = mine.find(l => l.pid === ME.id);
+      if (mineLine && mineLine.a > 0) { Sound.play('jackpot'); buzz([30, 30, 90]); }
+      else if (mineLine && mineLine.a < 0) { Sound.play('wahwah'); buzz(250); }
+      if (ME.roleChanged) { Sound.play('sparkle'); buzz([60, 60, 60, 60]); }
+      return;
+    }
+    view.innerHTML = `${head}<div class="look-tv">${pd.type === 'treasure_hunt' ? '⛏️ ' + esc(t('p.twistTapReady')) : '📺 ' + esc(t('p.lookTV'))}</div>`;
+    buzz([100, 60, 100]);
+  }
+
+  /* ================= Erbstück-Auktion ================= */
+  let bidDraft = 0;
+  function vAuction() {
+    const pd = S.pd, h = D.HEIRLOOM_BY_ID[pd.h];
+    const item = `<div class="auction-item"><div class="ai-e">${h.emoji}</div><div class="h2 center">${esc(t('h.' + pd.h))}</div></div>`;
+    if (pd.stage === 'result') {
+      const w = P(pd.winner);
+      const mine = pd.winner === ME.id;
+      view.innerHTML = `<div class="section-title center-title">${esc(t('p.auction'))}</div>${item}
+        ${w ? `<div class="wait-hero">${medal(w)}<div class="h2">${esc(t('h.sold', { a: w.name, n: fmt(pd.price, lang) }))}</div></div>` : `<p class="center sub">${esc(t('h.unsold'))}</p>`}
+        ${ME.bid > 0 && !mine ? `<p class="center sub">${esc(t('p.auctionLost'))}</p>` : ''}`;
+      if (mine) { Sound.play('gavel'); confetti({ count: 70 }); buzz([40, 40, 120]); toast(t('p.auctionWon', { h: pd.h })); }
+      return;
+    }
+    if (ME.bid !== undefined) {
+      view.innerHTML = `<div class="section-title center-title">${esc(t('p.auction'))}</div>${item}<div class="secret parchment">🔨 ${esc(ME.bid > 0 ? t('p.bidDone', { n: fmt(ME.bid, lang) }) : t('p.noBidDone'))}</div><div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`;
+      return;
+    }
+    if (ME.ghost) { view.innerHTML = `${item}<div class="look-tv">👻 ${esc(t('p.lookTV'))}</div>`; conn.emit('player:bid', 0); return; }
+    bidDraft = Math.min(bidDraft || 50, ME.money);
+    view.innerHTML = `<div class="section-title center-title">${esc(t('p.auction'))}</div>${item}
+      <p class="sub center">${esc(t('p.bidHint'))}</p>
+      <div class="bid-display"><span class="money" id="bid-v">${fmt(bidDraft, lang)}</span></div>
+      <div class="chip-row">${[-50, -10, 10, 50, 100].map(d => `<button class="chip" data-d="${d}">${d > 0 ? '+' : '−'}${Math.abs(d)}</button>`).join('')}</div>
+      <div class="two-btn"><button class="btn big blood" id="bid-go">🔨 ${esc(t('p.bid'))}</button><button class="btn big" id="bid-no">${esc(t('p.noBid'))}</button></div>`;
+    $$('[data-d]', view).forEach(b => b.onclick = () => {
+      bidDraft = Math.max(0, Math.min(ME.money, bidDraft + +b.dataset.d));
+      $('#bid-v').textContent = fmt(bidDraft, lang);
+      const v = $('#bid-v'); v.classList.remove('pop'); void v.offsetWidth; v.classList.add('pop');
+      Sound.play('coin'); buzz(8);
+    });
+    $('#bid-go').onclick = () => { if (bidDraft <= 0) { buzz(80); return; } conn.emit('player:bid', bidDraft); Sound.play('gavel'); buzz([20, 40, 20]); };
+    $('#bid-no').onclick = () => { conn.emit('player:bid', 0); Sound.play('pop'); };
+    Sound.play('gavel');
+  }
+
+  /* ================= Handel & Verträge ================= */
+  const Deals = { list: [], unread: 0, open: false };
+  conn.on('dealHistory', (list) => { Deals.list = Array.isArray(list) ? list : []; updateDealBadge(); });
+  conn.on('deal', (d) => {
+    if (!ME) return;
+    const i = Deals.list.findIndex(x => x.id === d.id);
+    const prev = i >= 0 ? Deals.list[i] : null;
+    if (i >= 0) Deals.list[i] = d; else Deals.list.push(d);
+    const other = P(d.from === ME.id ? d.to : d.from);
+    const name = other ? other.name : '?';
+    if (!prev && d.to === ME.id && d.status === 'open') { toast(t('p.dealIncoming', { a: name }), 4000); Sound.play('scribble'); buzz([30, 50, 30]); if (!Deals.open) Deals.unread++; }
+    else if (prev && prev.status !== d.status) {
+      if (d.status === 'accepted') { toast(t('p.dealSignedMe', { a: name })); Sound.play('stamp'); buzz([20, 40, 20]); }
+      else if (d.status === 'declined' && d.from === ME.id) { toast(t('p.dealDeclinedMe', { a: name })); Sound.play('wrong'); }
+      else if (d.status === 'broken' && d.brokenBy === ME.id) { toast(t('p.dealBrokenMe', { a: name }), 4000); Sound.play('wahwah'); buzz(300); }
+    }
+    updateDealBadge();
+    if (Deals.open) renderDeals();
+  });
+  function updateDealBadge() {
+    const pending = ME ? Deals.list.filter(d => d.to === ME.id && d.status === 'open').length : 0;
+    const n = Math.max(pending, Deals.unread ? pending : 0);
+    const b = $('#deal-badge');
+    b.textContent = n; b.classList.toggle('hidden', !n);
+    $('#deal-btn').classList.toggle('hidden', !S || S.phase === 'lobby' || S.phase === 'finale');
+  }
+  conn.on('state', () => updateDealBadge());
+  $('#deal-btn').onclick = () => openDeals();
+  function closeDeals() { Deals.open = false; }
+  function dealTerms(d) {
+    const a = P(d.from), b = P(d.to);
+    const out = [];
+    if (d.giveMoney) out.push(t('p.dealPays', { a: a ? a.name : '?', n: fmt(d.giveMoney, lang) }));
+    if (d.wantMoney) out.push(t('p.dealPays', { a: b ? b.name : '?', n: fmt(d.wantMoney, lang) }));
+    if (d.giveCard) out.push(t('p.dealCardFrom', { a: a ? a.name : '?', c: d.giveCard }));
+    if (d.promise) out.push(t('p.dealPromiseFrom', { a: a ? a.name : '?', x: d.promise.key ? t('promise.' + d.promise.key) : d.promise.text }));
+    return out;
+  }
+  function openDeals() {
+    if (!ME || !S || S.phase === 'lobby' || S.phase === 'finale') return;
+    Deals.open = true; Deals.unread = 0; Deals.form = false;
+    renderDeals();
+  }
+  function renderDeals() {
+    if (!Deals.open) return;
+    if (Deals.form) return renderDealForm();
+    const list = [...Deals.list].sort((x, y) => (x.status === 'open' ? 0 : 1) - (y.status === 'open' ? 0 : 1) || y.id - x.id);
+    openSheet(`<div class="deals"><h3>🤝 ${esc(t('p.deals'))}</h3>
+      <button class="btn blood wide" id="deal-new">${esc(t('p.dealNew'))}</button>
+      ${list.length ? list.map(d => {
+        const other = P(d.from === ME.id ? d.to : d.from);
+        const incoming = d.to === ME.id && d.status === 'open';
+        const mineOpen = d.from === ME.id && d.status === 'open';
+        const canAccuse = d.status === 'accepted';
+        return `<div class="deal st-${d.status}">
+          <div class="deal-top">${medal(other, 'tiny')}<b>${esc(other ? other.name : '?')}</b><span class="deal-st">${d.status === 'broken' ? '🐍 ' : d.status === 'accepted' ? '✍️ ' : ''}${esc(t('deal.' + d.status))}</span></div>
+          <ul>${dealTerms(d).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+          ${incoming ? `<div class="two-btn"><button class="btn blood" data-acc="${d.id}">${esc(t('p.dealAccept'))}</button><button class="btn" data-dec="${d.id}">${esc(t('p.dealDecline'))}</button></div>` : ''}
+          ${mineOpen ? `<button class="btn ghosty ink" data-can="${d.id}">${esc(t('p.dealCancel'))}</button>` : ''}
+          ${canAccuse ? `<button class="btn ghosty ink accuse" data-acu="${d.id}">${esc(t('p.dealAccuse'))}</button>` : ''}
+        </div>`;
+      }).join('') : `<p class="chat-empty">${esc(t('p.dealEmpty'))}</p>`}
+      <button class="btn" data-close>${esc(t('p.close'))}</button></div>`);
+    const sb = $('#sheet-body');
+    $('#deal-new').onclick = () => { Deals.form = true; Deals.draft = { to: null, giveMoney: 0, wantMoney: 0, giveCard: null, promise: null, text: '' }; renderDeals(); };
+    $$('[data-acc]', sb).forEach(b => b.onclick = () => conn.emit('player:dealRespond', { id: +b.dataset.acc, accept: true }, (r) => { if (r && r.error) toast(t('p.dealErr.' + r.error)); }));
+    $$('[data-dec]', sb).forEach(b => b.onclick = () => conn.emit('player:dealRespond', { id: +b.dataset.dec, accept: false }, () => {}));
+    $$('[data-can]', sb).forEach(b => b.onclick = () => conn.emit('player:dealCancel', +b.dataset.can, () => {}));
+    $$('[data-acu]', sb).forEach(b => b.onclick = () => {
+      const d = Deals.list.find(x => x.id === +b.dataset.acu); if (!d) return;
+      const other = P(d.from === ME.id ? d.to : d.from);
+      if (b.dataset.sure) { conn.emit('player:dealAccuse', d.id, (r) => { if (r && r.error) toast(t('p.dealErr.' + r.error)); else { Sound.play('whistle'); buzz(100); } }); return; }
+      b.dataset.sure = '1'; b.textContent = '⚠️ ' + t('p.dealAccuseConfirm', { a: other ? other.name : '?' }); buzz(30);
+    });
+  }
+  function renderDealForm() {
+    const dr = Deals.draft;
+    const others = S.players.filter(p => p.id !== ME.id);
+    const promiseOpts = D.PROMISES.map(k => `<button class="chip promise ${dr.promise === k ? 'on' : ''}" data-pr="${k}">${esc(t('promise.' + k))}</button>`).join('');
+    openSheet(`<div class="deals deal-form"><h3>${esc(t('p.dealNew'))}</h3>
+      <h4>${esc(t('p.dealWith'))}</h4>
+      <div class="pick-list">${others.map(p => `<button class="pick ${dr.to === p.id ? 'on' : ''}" data-to="${p.id}">${medal(p)}<span class="pn">${esc(p.name)}</span></button>`).join('')}</div>
+      <div class="money-row"><label>${esc(t('p.dealGive'))}<input id="dl-give" inputmode="numeric" pattern="[0-9]*" value="${dr.giveMoney || ''}" placeholder="0"></label>
+        <label>${esc(t('p.dealWant'))}<input id="dl-want" inputmode="numeric" pattern="[0-9]*" value="${dr.wantMoney || ''}" placeholder="0"></label></div>
+      <h4>${esc(t('p.dealCard'))}</h4>
+      <div class="chip-row wrap"><button class="chip ${dr.giveCard == null ? 'on' : ''}" data-card="">${esc(t('p.dealNoCard'))}</button>${ME.hand.map((c, i) => `<button class="chip ${dr.giveCard === i ? 'on' : ''}" data-card="${i}">${D.CARDS[c].emoji} ${esc(t('card.' + c))}</button>`).join('')}</div>
+      <h4>${esc(t('p.dealPromise'))}</h4>
+      <div class="chip-row wrap"><button class="chip promise ${!dr.promise ? 'on' : ''}" data-pr="">${esc(t('p.dealNoPromise'))}</button>${promiseOpts}<button class="chip promise ${dr.promise === 'own' ? 'on' : ''}" data-pr="own">${esc(t('p.dealOwn'))}</button></div>
+      <input id="dl-own" class="${dr.promise === 'own' ? '' : 'hidden'}" maxlength="80" placeholder="${esc(t('p.dealOwnPh'))}" value="${esc(dr.text || '')}">
+      <button class="btn big blood wide" id="dl-send">📜 ${esc(t('p.dealSend'))}</button>
+      <button class="btn ghosty ink" id="dl-back">‹ ${esc(t('p.deals'))}</button></div>`);
+    const sb = $('#sheet-body');
+    const keep = () => { dr.giveMoney = parseInt($('#dl-give').value, 10) || 0; dr.wantMoney = parseInt($('#dl-want').value, 10) || 0; dr.text = $('#dl-own').value; };
+    $$('[data-to]', sb).forEach(b => b.onclick = () => { keep(); dr.to = b.dataset.to; renderDealForm(); Sound.play('pop'); });
+    $$('[data-card]', sb).forEach(b => b.onclick = () => { keep(); dr.giveCard = b.dataset.card === '' ? null : +b.dataset.card; renderDealForm(); Sound.play('card'); });
+    $$('[data-pr]', sb).forEach(b => b.onclick = () => { keep(); dr.promise = b.dataset.pr || null; renderDealForm(); Sound.play('pop'); if (dr.promise === 'own') setTimeout(() => $('#dl-own').focus(), 50); });
+    $('#dl-back').onclick = () => { Deals.form = false; renderDeals(); };
+    $('#dl-send').onclick = () => {
+      keep();
+      if (!dr.to) { toast(t('p.dealErr.target')); buzz(80); return; }
+      const promise = dr.promise === 'own' ? (dr.text || '').trim() : dr.promise;
+      conn.emit('player:deal', { to: dr.to, giveMoney: dr.giveMoney, wantMoney: dr.wantMoney, giveCard: dr.giveCard, promise }, (r) => {
+        if (r && r.error) { toast(t('p.dealErr.' + r.error)); buzz(80); return; }
+        toast(t('p.dealSent')); Sound.play('scribble'); buzz([20, 30, 20]);
+        Deals.form = false; renderDeals();
+      });
+    };
+  }
+
+  /* ================= Preisverleihung ================= */
+  function myAwards() {
+    const st = (S.pd.steps || []).find(x => x.t === 'awards');
+    const mine = st ? st.awards.filter(a => a.pid === ME.id) : [];
+    if (!mine.length) return '';
+    const A = Object.fromEntries(D.AWARDS.map(a => [a.id, a]));
+    return `<div class="my-awards card-box"><div class="section-title"><span>🏆 ${esc(t('p.awardsMe'))}</span></div>
+      ${mine.map((a, i) => `<div class="award-row" style="animation-delay:${i * 150}ms"><span class="aw-e">${A[a.id].emoji}</span><div><b>${esc(t('award.' + a.id))}</b><small>${esc(t('awardd.' + a.id, { n: a.n }))}</small></div></div>`).join('')}</div>`;
   }
 
   // Bei neuem Spiel zurücksetzen
   let prevPhase = null;
   conn.on('state', (d) => {
     if (d.phase === 'lobby') {
-      showRank = false; fvDraft = {}; draftRound = -1;
+      showRank = false; fvDraft = {}; draftRound = -1; Deals.list = []; Deals.unread = 0;
       if (prevPhase && prevPhase !== 'lobby') { Chat.msgs = []; Chat.unread = {}; updateChatBadge(); }
     }
     prevPhase = d.phase;
   });
 
-  window.__otto = () => ({ S, ME, Chat });
+  window.__otto = () => ({ S, ME, Chat, Deals });
   applyI18n();
   renderJoinPortrait();
 })();

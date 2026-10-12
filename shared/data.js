@@ -210,6 +210,12 @@
     { id: 'language',        fx: { vote: 90 } },
     { id: 'story',           fx: { vote: 100 } },
     { id: 'pose',            fx: { vote: 80 } },
+    /* ---- Selfie-Klauseln: alle machen ein Foto, dann wird abgestimmt ---- */
+    { id: 'selfie_teeth',    fx: { vote: 100, selfie: true } },
+    { id: 'selfie_rich',     fx: { vote: 100, selfie: true } },
+    { id: 'selfie_guilty',   fx: { vote: 100, selfie: true } },
+    { id: 'selfie_ghost',    fx: { vote: 100, selfie: true } },
+    { id: 'selfie_notary',   fx: { vote: 100, selfie: true } },
     { id: 'finale',          fx: { mult: { all: 3 }, final: true } }
   ];
 
@@ -235,6 +241,41 @@
     unique:    { emoji: '🤑', time: 16, play: 0,   better: 'unique' }
   };
 
+  // Familien mit Wappen und Farbe (Namen stehen in i18n: fam.<id>)
+  const FAMILIES = [
+    { id: 0, emoji: '🦷', color: '#e0525a' },
+    { id: 1, emoji: '🥙', color: '#f0a23b' },
+    { id: 2, emoji: '🥿', color: '#4a90e2' },
+    { id: 3, emoji: '🍯', color: '#6cc36a' },
+    { id: 4, emoji: '🦊', color: '#d667c4' },
+    { id: 5, emoji: '🧦', color: '#3fb8b0' }
+  ];
+
+  // Plot-Twists: unerwartete Ereignisse zwischen den Runden
+  const TWISTS = {
+    otto_alive:     { emoji: '⚰️' },
+    tax_raid:       { emoji: '🚔', interactive: 'hide' },
+    second_will:    { emoji: '📜' },
+    earthquake:     { emoji: '🌋' },
+    role_swap:      { emoji: '🎭' },
+    treasure_hunt:  { emoji: '🗝️', interactive: 'tap' },
+    vultures:       { emoji: '🦅' },
+    cousin_america: { emoji: '🤠' }
+  };
+  // Foto-Streiche für Verlierer (eine Runde lang)
+  const PRANKS = ['nose', 'stache', 'shades', 'tp'];
+  // Sabotage, die Zuschauer auf Duellanten werfen können
+  const SABOTAGE = { tomato: { emoji: '🍅' }, quake: { emoji: '📳' }, fog: { emoji: '🌫️' }, flip: { emoji: '🙃' } };
+  const SABOTAGE_MAX = 3;
+  // Versprechen für Verträge (eigener Text ist auch möglich)
+  const PROMISES = ['noVault', 'noCard', 'noVote', 'sameRoom', 'noTheft'];
+  // Preisverleihung: Statistik → Auszeichnung
+  const AWARDS = [
+    { id: 'robbed', emoji: '🥀' }, { id: 'chat', emoji: '💬' }, { id: 'cellar', emoji: '🪜' }, { id: 'banana', emoji: '🍌' },
+    { id: 'duelWin', emoji: '⚔️' }, { id: 'sabThrown', emoji: '🍅' }, { id: 'sabGot', emoji: '🎯' }, { id: 'betProfit', emoji: '🎰' },
+    { id: 'broken', emoji: '🐍' }, { id: 'cards', emoji: '🃏' }, { id: 'ghostRounds', emoji: '👻' }, { id: 'auctionSpent', emoji: '🔨' }
+  ];
+
   const AVATARS = ['🦊','🐸','🦉','🐷','🐵','🦄','🐙','🦁','🐼','🐔','🦖','🐢','🐝','🦩','🐨','🐺','🦔','🐳'];
   const COLORS = ['#e0525a','#f0a23b','#e6d14a','#6cc36a','#3fb8b0','#4a90e2','#8a6fe0','#d667c4',
                   '#f07f59','#a3d94f','#5bd1e8','#c9a0ff','#ff8fab','#b8865a','#9fb3c8'];
@@ -243,7 +284,8 @@
   const data = {
     START_MONEY, HAND_MAX, ROOMS, BASE_ROOMS, BIG_ROOMS, CARDS, CARD_POOL, ROLES,
     HEIRLOOMS, HEIRLOOM_BY_ID: byId(HEIRLOOMS), QUESTIONS, QUESTION_BY_ID: byId(QUESTIONS),
-    CLAUSES, CLAUSE_BY_ID: byId(CLAUSES), AVATARS, COLORS, ROLE_UNLOCK, DUELS,
+    CLAUSES, CLAUSE_BY_ID: byId(CLAUSES), AVATARS, COLORS, FAMILIES,
+    TWISTS, PRANKS, SABOTAGE, SABOTAGE_MAX, PROMISES, AWARDS, ROLE_UNLOCK, DUELS,
     DUEL_TYPES: Object.keys(DUELS)
   };
 

@@ -127,8 +127,8 @@
     if (!from) return;
     const el = document.createElement('div');
     el.className = 'whisper';
-    el.innerHTML = `${medal(from, 'wsm')}<span class="wdots">💬</span>${to ? medal(to, 'wsm') : '<span class="wfam">👨‍👩‍👧</span>'}
-      <span class="wtext">${esc(to ? t('h.whisper', { a: from.name, b: to.name }) : t('h.famWhisper', { n: (w.fam || 0) + 1 }))}</span>`;
+    el.innerHTML = `${medal(from, 'wsm')}<span class="wdots">💬</span>${to ? medal(to, 'wsm') : `<span class="wfam">${D.FAMILIES[w.fam || 0].emoji}</span>`}
+      <span class="wtext">${esc(to ? t('h.whisper', { a: from.name, b: to.name }) : t('h.famWhisper', { n: t('fam.' + (w.fam || 0)) }))}</span>`;
     box.appendChild(el);
     Sound.play('whisper');
     setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 4200);
@@ -144,7 +144,7 @@
     ['start', 'lobby', 'game'].forEach(n => $('#scr-' + n).classList.toggle('hidden', n !== name));
   }
 
-  const MUSIC_FOR = { lobby: 'lobby', intro: null, clause: null, plan: 'plan', reveal: 'plan', duel: 'duel', results: 'lobby', vote: 'plan', finalvote: 'plan', finale: 'finale' };
+  const MUSIC_FOR = { lobby: 'lobby', intro: null, clause: null, plan: 'plan', reveal: 'plan', duel: 'duel', results: 'lobby', vote: 'plan', finalvote: 'plan', finale: 'finale', twist: 'duel', auction: 'lobby' };
   /* ---------------- Hauptrender ---------------- */
   function render() {
     if (!S) return;
@@ -184,11 +184,13 @@
     $('#heir-empty').classList.toggle('hidden', n > 0);
     const list = $('#heir-list');
     list.classList.toggle('many', n > 10);
-    const ids = S.players.map(p => p.id + p.avatar + p.connected + p.name + p.photo).join();
+    const fm = S.settings.famMode;
+    const ids = S.players.map(p => p.id + p.avatar + p.connected + p.name + p.photo + p.famPick).join() + fm + S.settings.famCount + lang;
     if (list.dataset.ids !== ids) {
       list.dataset.ids = ids;
       list.innerHTML = S.players.map(p => `
-        <li class="${p.connected ? '' : 'off'}">
+        <li class="${p.connected ? '' : 'off'} ${fm === 'choose' ? 'fam-pickable' : ''}" data-pid="${p.id}" ${fm === 'choose' && p.famPick != null ? `style="--fc:${D.FAMILIES[p.famPick].color}"` : ''}>
+          ${fm === 'choose' && p.famPick != null ? `<span class="fam-badge" title="${esc(t('fam.' + p.famPick))}">${D.FAMILIES[p.famPick].emoji}</span>` : ''}
           ${medal(p)}<span class="nm">${esc(p.name)}</span>
           <span class="tag">${p.isBot ? '🤖 ' + esc(t('h.bot')) : p.connected ? '' : esc(t('h.offline'))}</span>
           <button class="kick" data-kick="${p.id}" title="${esc(t('h.kick'))}">✕</button>
@@ -199,16 +201,44 @@
     $$('.unlocks li').forEach(li => li.classList.toggle('on', n >= +li.dataset.n));
     $('#set-rounds').value = String(S.settings.rounds);
     $('#set-time').value = String(S.settings.planTime);
+    renderFamilySettings();
     const btn = $('#btn-start');
     btn.disabled = n < 2;
     btn.textContent = n < 2 ? t('h.needTwo') : t('h.start');
     $('#btn-bot').disabled = n >= 15;
   }
-  $('#heir-list').addEventListener('click', (e) => { const k = e.target.closest('[data-kick]'); if (k) conn.emit('host:kick', k.dataset.kick); });
+  $('#heir-list').addEventListener('click', (e) => {
+    const k = e.target.closest('[data-kick]');
+    if (k) { conn.emit('host:kick', k.dataset.kick); return; }
+    const li = e.target.closest('li[data-pid]');
+    if (li && S && S.settings.famMode === 'choose') { conn.emit('host:famCycle', li.dataset.pid); Sound.play('pop'); }
+  });
+
+  /* ---------------- Familien-Einstellung ---------------- */
+  const sendSettings = (patch) => conn.emit('host:settings', { ...S.settings, ...patch });
+  $('#fam-mode').addEventListener('click', (e) => { const b = e.target.closest('[data-fm]'); if (b) { sendSettings({ famMode: b.dataset.fm }); Sound.play('pop'); } });
+  $('#fam-count').addEventListener('change', (e) => sendSettings({ famCount: e.target.value }));
+  function renderFamilySettings() {
+    const { famMode, famCount } = S.settings;
+    $$('#fam-mode [data-fm]').forEach(b => b.classList.toggle('on', b.dataset.fm === famMode));
+    $('#fam-count-wrap').classList.toggle('hidden', famMode === 'off');
+    $('#fam-count').value = String(famCount);
+    $('#fam-hint').textContent = t(famMode === 'choose' ? 'h.famHintChoose' : famMode === 'random' ? 'h.famHintRandom' : 'h.famHintOff');
+    const board = $('#fam-board');
+    if (famMode === 'off') { board.innerHTML = ''; return; }
+    board.innerHTML = D.FAMILIES.slice(0, famCount).map(f => {
+      const members = famMode === 'choose' ? S.players.filter(p => p.famPick === f.id) : [];
+      return `<div class="fam-col" style="--fc:${f.color}">
+        <div class="fam-crest">${f.emoji}</div>
+        <div class="fam-name">${esc(t('fam.' + f.id))}</div>
+        <div class="fam-members">${famMode === 'random' ? '<span class="fam-q">🎲</span>' : members.length ? members.map(p => medal(p, 'wsm')).join('') : `<small>${esc(t('h.famNoOne'))}</small>`}</div>
+      </div>`;
+    }).join('');
+  }
   $('#btn-bot').addEventListener('click', () => conn.emit('host:addBot'));
   $('#btn-start').addEventListener('click', () => { Sound.init(); conn.emit('host:start'); });
-  $('#set-rounds').addEventListener('change', (e) => conn.emit('host:settings', { rounds: e.target.value, planTime: S.settings.planTime }));
-  $('#set-time').addEventListener('change', (e) => conn.emit('host:settings', { rounds: S.settings.rounds, planTime: e.target.value }));
+  $('#set-rounds').addEventListener('change', (e) => sendSettings({ rounds: e.target.value }));
+  $('#set-time').addEventListener('change', (e) => sendSettings({ planTime: e.target.value }));
 
   /* ---------------- Villa ---------------- */
   function buildVilla() {
@@ -245,12 +275,15 @@
         el.innerHTML = `<div class="medal"></div><div class="tn"></div>`;
         box.appendChild(el);
       }
-      if (el.dataset.ph !== String(p.photo)) {
-        el.dataset.ph = String(p.photo);
+      const look = p.photo + '|' + (p.prank || '');
+      if (el.dataset.ph !== look) {
+        const hadPrank = el.dataset.ph && !el.dataset.ph.endsWith('|') ;
+        el.dataset.ph = look;
+        if (p.prank && !hadPrank && S.phase !== 'lobby') setTimeout(() => { tokenFx(p.id, 'spin', 1400); floater(p.id, '🤡 ' + t('prank.' + p.prank), 'neutral'); Sound.play('boing'); }, 300);
         const tmp = document.createElement('div'); tmp.innerHTML = medal(p);
         el.replaceChild(tmp.firstElementChild, el.querySelector('.medal'));
       }
-      el.querySelector('.tn').textContent = p.name;
+      el.querySelector('.tn').textContent = (S.families && p.family != null ? D.FAMILIES[p.family].emoji + ' ' : '') + p.name;
       el.querySelector('.medal').classList.toggle('ghost', p.ghost);
       el.classList.toggle('ghostly', p.ghost);
     });
@@ -336,7 +369,7 @@
     if (!S || S.phase === 'lobby') return;
     const left = Clock.left(S.endsAt);
     const el = $('#timer');
-    const show = S.endsAt && ['plan', 'vote', 'finalvote'].includes(S.phase) || (S.phase === 'duel' && S.pd.stage === 'play');
+    const show = S.endsAt && (['plan', 'vote', 'finalvote'].includes(S.phase) || (S.phase === 'duel' && S.pd.stage === 'play') || (S.phase === 'twist' && S.pd.stage === 'act') || (S.phase === 'auction' && S.pd.stage === 'bid'));
     el.classList.toggle('idle', !show);
     if (!show) return;
     const sec = Math.ceil(left / 1000);
@@ -353,7 +386,7 @@
     const showDone = ['plan', 'vote', 'finalvote'].includes(S.phase);
     const showDelta = ['results', 'vote'].includes(S.phase);
     ol.classList.toggle('compact', list.length > 9);
-    const fam = (p) => (S.families && p.family != null) ? `<i class="fam-dot" style="background:${D.COLORS[(p.family * 4) % D.COLORS.length]}"></i>` : '';
+    const fam = (p) => (S.families && p.family != null) ? `<i class="fam-tag" style="--fc:${D.FAMILIES[p.family].color}" title="${esc(t('fam.' + p.family))}">${D.FAMILIES[p.family].emoji}</i>` : '';
     // FLIP-Animation beim Umsortieren
     const before = {};
     $$('li', ol).forEach(li => { before[li.dataset.pid] = li.getBoundingClientRect().top; });
@@ -409,11 +442,17 @@
       case 'vote': return enterVote(my);
       case 'finalvote': return enterFinalVote();
       case 'finale': return enterFinale(my);
+      case 'twist': return enterTwist(my);
+      case 'auction': return enterAuction(my);
     }
   }
   function updatePhase(ph) {
     if (ph === 'plan') updatePlanBanner();
     if (ph === 'duel' && S.pd.stage === 'play') updateDuelReady();
+    if (ph === 'duel' && S.pd.stage !== 'result') updateBetBoard();
+    if (ph === 'vote' && S.pd.stage === 'selfie') updateVoteReady();
+    if (ph === 'twist' && S.pd.stage === 'act') updateVoteReady();
+    if (ph === 'auction' && S.pd.stage === 'bid') updateVoteReady();
     if (ph === 'vote' && S.pd.stage === 'vote') updateVoteReady();
     if (ph === 'finalvote') updateVoteReady();
   }
@@ -428,6 +467,24 @@
       <p class="look">📱 ${esc(t('i.look'))}</p></div>`);
     Sound.play('bell'); Sound.play('heartbeat');
     setTimeout(() => say('v.intro'), 900);
+    if (S.families) setTimeout(() => { if (seq === my) showFamilies(my); }, 8500);
+  }
+
+  // Die Familien werden feierlich vorgestellt
+  function showFamilies(my) {
+    showOverlay(`<div class="ov-inner fam-intro">
+      <h1 class="display">${esc(t('h.famIntro'))}</h1>
+      <div class="fam-intro-row">${S.families.map((f, i) => { const F = D.FAMILIES[f.id]; return `
+        <div class="fam-intro-card" style="--fc:${F.color};animation-delay:${300 + i * 450}ms">
+          <div class="fam-crest big">${F.emoji}</div>
+          <div class="fam-name">${esc(t('fam.' + f.id))}</div>
+          <div class="fam-motto">„${esc(t('fam.motto.' + f.id))}“</div>
+          <div class="fam-members">${f.members.map(id => medal(P(id))).join('')}</div>
+        </div>`; }).join('')}</div>
+    </div>`);
+    Sound.play('fanfare');
+    say('v.families');
+    S.families.forEach((f, i) => setTimeout(() => { if (seq === my) Sound.play('stamp'); }, 300 + i * 450));
   }
 
   function enterClause(my) {
@@ -465,6 +522,23 @@
     layoutTokens({}, 30);
     updatePlanBanner();
     Sound.play('pop');
+    $$('.token').forEach(el => el.classList.toggle('wanted', el.dataset.pid === S.pd.wanted));
+    const w = P(S.pd.wanted);
+    if (w) {
+      const my = seq;
+      showOverlay(`<div class="wanted-poster parchment">
+        <div class="wp-title">${esc(t('h.wanted'))}</div>
+        <div class="wp-photo">${medal(w)}</div>
+        <div class="wp-name">${esc(w.name)}</div>
+        <div class="wp-reward">${esc(t('h.reward'))}: <span class="money">${fmt(50, lang)}</span></div>
+        <div class="wp-sub">${esc(t('h.wantedSub', { a: w.name, n: fmt(50, lang) }))}</div>
+        <div class="wp-nail l"></div><div class="wp-nail r"></div>
+      </div>`, 'ov-wanted');
+      Sound.play('whistle'); setTimeout(() => { if (seq === my) Sound.play('stamp'); }, 700);
+      say(['v.wanted', 'v.plan']);
+      setTimeout(() => { if (seq === my) hideOverlay(); }, 5200);
+      return;
+    }
     say('v.plan', { queue: true });
   }
   function updatePlanBanner() {
@@ -481,7 +555,7 @@
 
   const CARD_SFX = { banana: 'slip', thief: 'thief', forgery: 'scribble', lawyer: 'gavel', blackout: 'powerdown', lure: 'whistle', tape: 'tape', gift: 'gift', extortion: 'kaching',
     swap: 'whoosh', magnet: 'magnet', clover: 'sparkle', sleep: 'snore', invoice: 'kaching', copycat: 'boing', dice: 'dice', bell: 'bell', curse: 'ghost',
-    trumpet: 'party', paparazzi: 'shutter', pickcard: 'shuffle', wine: 'hic', stinkbomb: 'stink', legacy: 'sparkle' };
+    trumpet: 'party', paparazzi: 'shutter', pickcard: 'shuffle', wine: 'hic', stinkbomb: 'stink', legacy: 'sparkle', bounty: 'jackpot' };
   const EVENT_SFX = { 'ev.storm': 'thunder', 'ev.blocked': 'boing', 'ev.bounced': 'meow', 'ev.gardenSafe': 'birds' };
   const EVENT_VOICE = { 'ev.storm': 'v.storm', 'ev.blocked': 'v.blocked', 'ev.bounced': 'v.bounced', 'ev.gardenSafe': 'v.gardenSafe' };
   async function enterReveal(my) {
@@ -506,11 +580,12 @@
       if (ev.k === 'ev.blocked') emoji = '🛡️';
       if (ev.k === 'ev.bounced') emoji = '🐾';
       if (ev.k === 'ev.gardenSafe') emoji = '🌳';
+      if (ev.k === 'rv.bounty') emoji = '🎯';
       const text = t(ev.k, { a: nm(ev.from), b: nm(ev.to), r: ev.room, n: ev.n, h: ev.h });
-      eventCard(emoji, t('card.' + ev.card), text);
+      eventCard(emoji, ev.card === 'bounty' ? t('h.wanted') : t('card.' + ev.card), text);
       Sound.play('card');
       setTimeout(() => { if (seq === my) Sound.play(EVENT_SFX[ev.k] || CARD_SFX[ev.card] || 'pop'); }, 250);
-      say(EVENT_VOICE[ev.k] || 'v.card.' + ev.card);
+      say(EVENT_VOICE[ev.k] || (ev.card === 'bounty' ? 'v.wanted' : 'v.card.' + ev.card));
       if (ev.k === 'rv.blackout' || ev.k === 'ev.storm') {
         document.body.classList.remove('blackout'); void document.body.offsetWidth; document.body.classList.add('blackout');
         if (ev.k === 'ev.storm') { document.body.classList.add('thunder'); setTimeout(() => document.body.classList.remove('thunder'), 1000); }
@@ -526,6 +601,7 @@
       }
       if (ev.k === 'rv.thief' && ev.n) { floater(ev.to, '−' + ev.n, 'neg'); setTimeout(() => floater(ev.from, '+' + ev.n, 'pos'), 500); tokenFx(ev.to, 'hit'); }
       if (ev.k === 'rv.extortion' && ev.n) floater(ev.from, '+' + ev.n, 'pos');
+      if (ev.k === 'rv.bounty') { floater(ev.from, '🎯 +' + ev.n, 'pos'); tokenFx(ev.from, 'glow', 2000); }
       if (ev.k === 'rv.invoice' && ev.n) { floater(ev.to, '−' + ev.n, 'neg'); setTimeout(() => floater(ev.from, '+' + ev.n, 'pos'), 500); tokenFx(ev.to, 'hit'); }
       if (ev.k === 'rv.magnet' && ev.n) { floater(ev.from, '+' + ev.n, 'pos'); tokenFx(ev.from, 'glow', 2000); }
       if (ev.k === 'rv.diceWin') { floater(ev.from, '+' + ev.n, 'pos'); tokenFx(ev.from, 'spin', 1500); }
@@ -570,11 +646,16 @@
       ${pd.stage !== 'intro' ? q : ''}
       <div class="duel-groups">${groupsHtml}</div>
       ${stageHtml}
+      ${pd.bets ? `<div class="bet-board" id="bet-board"><div class="bb-title">🎰 ${esc(t('h.bets'))} · 🍅 ${esc(t('p.sabTitle').replace(/^\S+\s/, ''))}</div><div class="bb-list"></div></div>` : ''}
+      ${pd.stage === 'result' && (pd.betResults || []).length ? `<div class="bet-results">${pd.betResults.map((b, i) => `<span class="bet-res ${b.delta > 0 ? 'pos' : 'neg'}" style="animation-delay:${1600 + i * 180}ms">${medal(P(b.pid), 'wsm')} ${esc(b.delta > 0 ? t('h.betWin', { a: nm(b.pid), n: fmt(b.delta, lang) }) : t('h.betLose', { a: nm(b.pid), n: fmt(-b.delta, lang) }))}</span>`).join('')}</div>` : ''}
       ${pd.stage === 'result' && ['estimate', 'count'].includes(pd.type) && pd.answer != null ? `<div class="answer-pill">✔ ${esc(t('g.answer', { n: fmt(pd.answer, lang) }))}</div>` : ''}
       ${pd.stage === 'result' && pd.type === 'safe' && pd.secret ? `<div class="answer-pill">🔓 ${esc(t('g.answer', { n: pd.secret }))}</div>` : ''}
       ${pd.stage === 'result' && pd.type === 'balloon' && pd.pop ? `<div class="answer-pill">💥 ${esc(t('sc.pumps', { n: pd.pop }))}</div>` : ''}
     </div>`);
-    if (pd.stage === 'intro') { Sound.play('clang'); setTimeout(() => Sound.play('drum'), 300); say(pd.reverse ? ['v.duel', 'duel.' + pd.type, 'g.duelReverse'] : ['v.duel', 'duel.' + pd.type]); }
+    if (pd.stage === 'intro') { Sound.play('clang'); setTimeout(() => Sound.play('drum'), 300); say([...(pd.reverse ? ['v.duel', 'duel.' + pd.type, 'g.duelReverse'] : ['v.duel', 'duel.' + pd.type]), ...(pd.bets ? ['v.bets'] : [])]); }
+    updateBetBoard();
+    if (pd.stage === 'result' && (pd.pranked || []).length) setTimeout(() => { if (seq === my) { Sound.play('boing'); pd.pranked.forEach(x => { const f = $(`.fighter[data-f="${x.pid}"] .medal`); if (f) f.insertAdjacentHTML('beforeend', window.OTTO.prankArt(x.kind)); }); } }, 1500);
+    if (pd.stage === 'result' && (pd.betResults || []).some(b => b.delta > 0)) setTimeout(() => { if (seq === my) Sound.play('jackpot'); }, 1700);
     if (pd.stage === 'play') {
       Sound.play('go');
       updateDuelReady();
@@ -600,6 +681,72 @@
       setTimeout(() => { if (seq === my) { Sound.play('win'); Sound.play('applause'); confetti({ count: 90, duration: 2500 }); } }, 1100);
     }
   }
+  // Wetten der Zuschauer live auf dem Fernseher
+  function updateBetBoard() {
+    const box = $('#bet-board .bb-list');
+    if (!box) return;
+    const bets = S.bets || {};
+    const html = Object.entries(bets).map(([pid, b]) => `<span class="bb-chip" data-b="${pid}">${medal(P(pid), 'wsm')}<b>${fmt(b.amount, lang)}</b> ➜ ${medal(P(b.on), 'wsm')}</span>`).join('') || `<small class="bb-empty">📱 ${esc(t('v.bets'))}</small>`;
+    const key = Object.keys(bets).join() + lang;
+    if (box.dataset.k === key) return;
+    const added = Object.keys(bets).filter(k => !(box.dataset.k || '').split(',').includes(k)).length;
+    box.dataset.k = key; box.innerHTML = html;
+    if (added && S.pd.stage !== 'result') Sound.play('coin');
+  }
+  // Fliegende Sabotage-Geschosse
+  conn.on('sabotage', (s) => {
+    if (!S || S.phase !== 'duel') return;
+    const target = $(`.fighter[data-f="${s.to}"]`);
+    if (!target) return;
+    const r = target.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'sab-fly';
+    el.textContent = D.SABOTAGE[s.kind].emoji;
+    const fromLeft = Math.random() < 0.5;
+    const sx = fromLeft ? -80 : innerWidth + 80, sy = innerHeight * (0.5 + Math.random() * 0.5);
+    const tx = r.left + r.width / 2, ty = r.top + r.height * 0.35;
+    el.style.left = '0px'; el.style.top = '0px';
+    $('#fx-layer').appendChild(el);
+    const anim = el.animate([
+      { transform: `translate(${sx}px, ${sy}px) rotate(0deg) scale(1)` },
+      { transform: `translate(${(sx + tx) / 2}px, ${Math.min(sy, ty) - 160}px) rotate(${fromLeft ? 360 : -360}deg) scale(1.4)`, offset: 0.55 },
+      { transform: `translate(${tx}px, ${ty}px) rotate(${fromLeft ? 720 : -720}deg) scale(1)` }
+    ], { duration: 750, easing: 'cubic-bezier(.3,.1,.5,1)' });
+    Sound.play('whoosh');
+    anim.onfinish = () => {
+      el.remove();
+      const from = P(s.from);
+      target.classList.remove('sab-' + s.kind); void target.offsetWidth; target.classList.add('sab-' + s.kind);
+      setTimeout(() => target.classList.remove('sab-' + s.kind), 1800);
+      if (s.kind === 'tomato') { Sound.play('splat'); target.insertAdjacentHTML('beforeend', '<span class="splat-tv"></span>'); const sp = target.querySelector('.splat-tv:last-child'); setTimeout(() => sp && sp.remove(), 2600); }
+      else Sound.play(s.kind === 'quake' ? 'rumble' : s.kind === 'fog' ? 'stink' : 'boing');
+      if (from) { const tag = document.createElement('div'); tag.className = 'sab-by'; tag.innerHTML = `${medal(from, 'wsm')} ${D.SABOTAGE[s.kind].emoji}`; target.appendChild(tag); setTimeout(() => tag.remove(), 1800); }
+    };
+  });
+  // Verträge: unterschrieben oder gebrochen
+  conn.on('dealEvent', (e) => {
+    if (!S) return;
+    const a = P(e.a), b = P(e.b);
+    if (!a || !b) return;
+    const box = $('#deal-feed');
+    const el = document.createElement('div');
+    if (e.type === 'signed') {
+      el.className = 'deal-card parchment';
+      el.innerHTML = `<div class="dc-ms">${medal(a)}<span class="dc-hand">🤝</span>${medal(b)}</div><div class="dc-text">${esc(t('h.dealSigned', { a: a.name, b: b.name }))}</div><div class="dc-stamp">✍️</div>`;
+      Sound.play('scribble'); setTimeout(() => Sound.play('stamp'), 600);
+      if (Math.random() < 0.5) say('v.deal', { queue: true });
+    } else {
+      el.className = 'deal-card snake';
+      const promise = e.promise ? (e.promise.key ? t('promise.' + e.promise.key) : e.promise.text) : '';
+      el.innerHTML = `<div class="dc-snake">🐍</div><div class="dc-ms">${medal(b, 'big')}</div><div class="dc-big">${esc(t('h.snake'))}</div><div class="dc-text">${esc(t('h.dealBroken', { a: a.name, b: b.name }))}</div>${promise ? `<div class="dc-promise">„${esc(promise)}“</div>` : ''}`;
+      Sound.play('hiss'); setTimeout(() => Sound.play('wahwah'), 700);
+      say('v.dealBroken');
+      if (S.phase !== 'lobby') tokenFx(b.id, 'hit', 1500);
+    }
+    while (box.children.length >= 2) box.firstElementChild.remove();
+    box.appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, e.type === 'signed' ? 4200 : 6500);
+  });
   function updateDuelReady() {
     S.players.forEach(p => { const f = $(`.fighter[data-f="${p.id}"]`); if (f) f.classList.toggle('ready', !!p.done); });
   }
@@ -663,16 +810,45 @@
     const pd = S.pd;
     const amt = pd.amount;
     const others = S.players;
+    const selfie = (p, round) => `<div class="selfie-frame"><img src="/selfie/${S.code}/${p.id}?r=${round}" alt=""></div>`;
+    if (pd.stage === 'selfie') {
+      const humans = S.players.filter(p => !p.isBot);
+      showOverlay(`<div class="ov-inner ov-vote ov-selfie">
+        <div class="vsub">📸 ${esc(t('h.selfieTitle'))}</div>
+        <div class="vq">${esc(t('vq.' + pd.clause))}</div>
+        <div class="vsub">${esc(t('h.selfieWait'))} · <span id="vote-count"></span></div>
+        <div class="selfie-cams">${humans.map((p, i) => `<div class="fighter cam" data-f="${p.id}" style="animation-delay:${i * 80}ms">${medal(p)}<span class="nm">${esc(p.name)}</span><span class="cam-ico">📸</span></div>`).join('')}</div>
+      </div>`);
+      Sound.play('shutter'); setTimeout(() => Sound.play('shutter'), 250);
+      say(['v.selfie', 'vq.' + pd.clause]);
+      updateVoteReady();
+      return;
+    }
     if (pd.stage === 'vote') {
-      showOverlay(`<div class="ov-inner ov-vote">
-        <div class="vsub">🗳️ ${esc(t('g.vote'))}</div>
+      const cands = pd.candidates ? others.filter(p => pd.candidates.includes(p.id)) : null;
+      showOverlay(`<div class="ov-inner ov-vote ${cands ? 'ov-selfie' : ''}">
+        <div class="vsub">${cands ? '📸' : '🗳️'} ${esc(t('g.vote'))}</div>
         <div class="vq">${esc(t('vq.' + pd.clause))}</div>
         <div class="vsub">${amt > 0 ? '+' : '−'}${fmt(Math.abs(amt), lang)} ${esc(t('cur'))} · <span id="vote-count"></span></div>
-        <div class="vote-grid">${others.map((p, i) => `<div class="fighter" data-f="${p.id}" style="animation-delay:${i * 60}ms">${medal(p)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>
+        ${cands ? `<div class="selfie-grid">${cands.map((p, i) => `<div class="fighter sf" data-f="${p.id}" style="animation-delay:${i * 140}ms;--tilt:${(i % 2 ? 1 : -1) * (2 + (i % 3))}deg">${selfie(p, pd.selfieRound)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>`
+          : `<div class="vote-grid">${others.map((p, i) => `<div class="fighter" data-f="${p.id}" style="animation-delay:${i * 60}ms">${medal(p)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>`}
       </div>`);
       Sound.play('bell');
       say(['v.vote', 'vq.' + pd.clause]);
+      if (cands) cands.forEach((p, i) => setTimeout(() => { if (seq === my) Sound.play('shutter'); }, i * 140));
       updateVoteReady();
+    } else if (pd.candidates) {
+      const counts = pd.counts || {};
+      const w = P(pd.winner);
+      const cands = others.filter(p => pd.candidates.includes(p.id));
+      showOverlay(`<div class="ov-inner ov-vote ov-selfie">
+        <div class="vq">${esc(t('vq.' + pd.clause))}</div>
+        <div class="selfie-grid small">${cands.map(p => `<div class="fighter sf ${p.id === pd.winner ? 'win' : 'lose'}" data-f="${p.id}">${selfie(p, pd.selfieRound)}<span class="nm">${esc(p.name)}</span><span class="votes">${'<i></i>'.repeat(counts[p.id] || 0)}</span></div>`).join('')}</div>
+        ${w ? `<div class="spotlight"><div class="vsub">${esc(t('g.voteWinner'))}</div><div class="nm">${esc(w.name)}</div><div class="amt ${pd.applied >= 0 ? 'pos' : 'neg'}">${signed(pd.applied)} ${esc(t('cur'))}</div></div>` : `<div class="spotlight"><div class="vsub">${esc(t('g.noVotes'))}</div></div>`}
+      </div>`);
+      Sound.play('drum');
+      say('v.voteResult');
+      if (w) setTimeout(() => { if (seq !== my) return; Sound.play('crash'); Sound.play('win'); Sound.play('applause'); confetti({ coins: true, count: 70 }); }, 1200);
     } else {
       const counts = pd.counts || {};
       const w = P(pd.winner);
@@ -690,7 +866,8 @@
     }
   }
   function updateVoteReady() {
-    const act = S.players.filter(p => p.connected || p.isBot);
+    const selfieStage = S.phase === 'vote' && S.pd.stage === 'selfie';
+    const act = S.players.filter(p => (p.connected || p.isBot) && !(selfieStage && p.isBot) && !(S.phase === 'auction' && p.ghost) && !(S.phase === 'twist' && S.pd.type === 'treasure_hunt' && p.ghost));
     const c = $('#vote-count');
     if (c) c.textContent = t('g.votesIn', { n: act.filter(p => p.done).length, m: act.length });
     S.players.forEach(p => { const f = $(`.fighter[data-f="${p.id}"]`); if (f) f.classList.toggle('ready', !!p.done); });
@@ -789,11 +966,24 @@
       } else if (st.t === 'family') {
         stage.innerHTML = `<div class="f-step"><h2>${esc(t('f.family'))}</h2><div class="fam-list">${st.ranking.map((f, i) => `
           <div class="fam-card ${i === 0 ? 'best' : ''}" style="animation:rise .5s ${i * 200}ms both">
-            <b>${esc(t('fam.n', { n: f.id + 1 }))}</b><div class="ms">${f.members.map(id => medal(P(id), 'wsm')).join('')}</div>
+            <div class="fam-crest" style="--fc:${D.FAMILIES[f.id].color}">${D.FAMILIES[f.id].emoji}</div><b>${esc(t('fam.' + f.id))}</b><div class="ms">${f.members.map(id => medal(P(id), 'wsm')).join('')}</div>
             <div class="money">${fmt(f.sum, lang)}</div></div>`).join('')}</div>
           <div class="f-sub">${esc(t('f.familyBonus'))}</div></div>`;
         Sound.play('win'); say('v.family');
         wait = 5500;
+      } else if (st.t === 'awards') {
+        const A = Object.fromEntries(D.AWARDS.map(a => [a.id, a]));
+        say('v.awards');
+        stage.innerHTML = `<div class="f-step"><h2>🏆 ${esc(t('h.awards'))}</h2><div class="f-sub" style="animation-delay:.2s">${esc(t('h.awardsSub'))}</div>
+          <div class="awards-grid">${st.awards.map((a, i) => { const p = P(a.pid); return p ? `
+            <div class="award-card" style="animation-delay:${1400 + i * 1300}ms">
+              <div class="aw-emoji">${A[a.id].emoji}</div>
+              <div class="aw-title">${esc(t('award.' + a.id))}</div>
+              ${medal(p)}<div class="aw-name">${esc(p.name)}</div>
+              <div class="aw-desc">${esc(t('awardd.' + a.id, { n: fmt(a.n, lang) }))}</div>
+            </div>` : ''; }).join('')}</div></div>`;
+        st.awards.forEach((a, i) => setTimeout(() => { if (seq === my) { Sound.play(i % 2 ? 'applause' : 'fanfare'); Sound.play('stamp'); } }, 1400 + i * 1300));
+        wait = 3200 + st.awards.length * 1300;
       } else if (st.t === 'roles') {
         say('v.roles');
         stage.innerHTML = `<div class="f-step"><h2>${esc(t('f.roles'))}</h2><div class="f-roles">${S.players.map((p, i) => `
@@ -819,6 +1009,119 @@
       }
       await Promise.race([sleep(wait), waiter]);
     }
+  }
+
+
+  /* ---------------- Plot-Twists ---------------- */
+  const TWIST_SFX = { otto_alive: 'ghost', tax_raid: 'siren', second_will: 'scribble', earthquake: 'rumble', role_swap: 'sparkle', treasure_hunt: 'coins', vultures: 'vulture', cousin_america: 'yeehaw' };
+  const TWIST_FX = { otto_alive: '🧟', tax_raid: '🚨', second_will: '📜', earthquake: '🪨', role_swap: '🎭', treasure_hunt: '🪙', vultures: '🦅', cousin_america: '🤠' };
+  function twistRain(type, n = 14) {
+    const box = $('#fx-layer');
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement('div');
+      el.className = 'tw-rain ' + type;
+      el.textContent = TWIST_FX[type];
+      el.style.left = (Math.random() * 100) + 'vw';
+      el.style.animationDelay = (Math.random() * 1.6) + 's';
+      el.style.fontSize = (2 + Math.random() * 3) + 'rem';
+      box.appendChild(el);
+      setTimeout(() => el.remove(), 5200);
+    }
+  }
+  function enterTwist(my) {
+    const pd = S.pd, tw = D.TWISTS[pd.type];
+    clearLogs();
+    setClosed([]);
+    const head = (big) => `<div class="tw-stamp ${big ? 'big' : ''}">${esc(t('h.twist'))}</div>
+      <div class="tw-emoji">${tw.emoji}</div><h1 class="display tw-title">${esc(t('twist.' + pd.type))}</h1>`;
+    if (pd.stage === 'result') {
+      if (pd.type === 'tax_raid' && pd.hidden) layoutTokens(pd.hidden, 40); else layoutTokens({}, 30);
+      if (pd.raid) { const r = $(`.room[data-room="${pd.raid}"]`); if (r) { r.classList.add('alarm', 'hot'); } }
+      const lines = pd.lines || [];
+      const taps = pd.taps ? Object.entries(pd.taps).sort((a, b) => b[1] - a[1]).slice(0, 8) : null;
+      showOverlay(`<div class="ov-inner ov-twist result">${head(false)}
+        ${pd.raid ? `<div class="tw-raid">🚔 ${esc(t('tw.raided', { r: pd.raid }))}</div>` : ''}
+        ${taps ? `<div class="tw-taps">${taps.map(([pid, n], i) => `<div class="tw-tap ${i < 3 ? 'top' : ''}" style="animation-delay:${400 + i * 160}ms">${i < 3 ? ['🥇', '🥈', '🥉'][i] : ''}${medal(P(pid), 'wsm')}<span>${esc(nm(pid))}</span><b>${n}×</b></div>`).join('')}</div>` : ''}
+        <div class="tw-lines">${lines.map((l, i) => `<div class="${l.a > 0 ? 'pos' : l.a < 0 ? 'neg' : ''}" style="animation-delay:${900 + i * 380}ms">${l.pid ? medal(P(l.pid), 'wsm') : ''}<span>${esc(t(l.k, l.p))}</span></div>`).join('')}</div>
+      </div>`, 'ov-twist-bg');
+      if (pd.type === 'tax_raid') { hideOverlay(); phaseBanner(`🚔 ${esc(t('tw.raided', { r: pd.raid }))}<small>${lines.map(l => esc(t(l.k, l.p))).join(' · ')}</small>`); Sound.play('siren'); setTimeout(() => { if (seq === my) Sound.play(lines.some(l => l.a < 0) ? 'alarm' : 'birds'); }, 900); }
+      lines.forEach((l, i) => setTimeout(() => { if (seq !== my) return; if (l.pid && l.a) floater(l.pid, signed(l.a), l.a > 0 ? 'pos' : 'neg'); Sound.play(l.a > 0 ? 'coins' : l.a < 0 ? 'lose' : 'pop'); }, 900 + i * 380));
+      if (!['tax_raid', 'treasure_hunt'].includes(pd.type)) {
+        // nicht-interaktiver Twist: Intro + Ergebnis in einem
+        say(['v.twist', 'v.tw.' + pd.type]);
+        Sound.play('twist');
+        setTimeout(() => { if (seq === my) Sound.play(TWIST_SFX[pd.type]); }, 900);
+        twistRain(pd.type);
+        if (pd.type === 'earthquake') { document.body.classList.remove('quake'); void document.body.offsetWidth; document.body.classList.add('quake'); setTimeout(() => document.body.classList.remove('quake'), 2600); }
+      }
+      if (pd.type === 'treasure_hunt') { confetti({ coins: true, count: 90 }); Sound.play('jackpot'); }
+      return;
+    }
+    if (pd.stage === 'intro') {
+      layoutTokens({}, 30);
+      showOverlay(`<div class="ov-inner ov-twist">${head(true)}<p class="tw-desc">${esc(t('twistd.' + pd.type))}</p><div class="look">📱 ${esc(t('p.twistTapReady'))}</div></div>`, 'ov-twist-bg');
+      Sound.play('twist'); setTimeout(() => { if (seq === my) Sound.play(TWIST_SFX[pd.type]); }, 900);
+      say(['v.twist', 'v.tw.' + pd.type]);
+      twistRain(pd.type, 10);
+      return;
+    }
+    // act
+    layoutTokens({}, 30);
+    showOverlay(`<div class="ov-inner ov-twist">${head(pd.type === 'tax_raid')}<p class="tw-desc">${esc(t('twistd.' + pd.type))}</p>
+      ${pd.type === 'treasure_hunt' ? `<div class="tw-dig">⛏️</div>` : ''}
+      <div class="vsub">📱 <span id="vote-count"></span></div>
+      <div class="vote-grid">${S.players.filter(p => !(pd.type === 'treasure_hunt' && p.ghost)).map((p, i) => `<div class="fighter" data-f="${p.id}" style="animation-delay:${i * 50}ms">${medal(p)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>
+    </div>`, 'ov-twist-bg' + (pd.type === 'tax_raid' ? ' siren' : ''));
+    if (pd.type === 'tax_raid') {
+      Sound.play('twist'); setTimeout(() => { if (seq === my) Sound.play('siren'); }, 900);
+      say(['v.twist', 'v.tw.tax_raid']);
+      twistRain('tax_raid', 8);
+    } else { Sound.play('go'); Sound.play('drum'); }
+    updateVoteReady();
+  }
+
+  /* ---------------- Erbstück-Auktion ---------------- */
+  async function enterAuction(my) {
+    const pd = S.pd, h = D.HEIRLOOM_BY_ID[pd.h];
+    clearLogs(); layoutTokens({}, 30);
+    if (pd.stage === 'bid') {
+      showOverlay(`<div class="ov-inner ov-auction">
+        <div class="auc-title"><span>🔨</span> ${esc(t('h.auction'))}</div>
+        <div class="auc-stage"><div class="auc-spot"></div><div class="auc-item">${h.emoji}</div><div class="auc-pedestal"></div></div>
+        <div class="auc-name">${esc(t('h.' + pd.h))}</div>
+        <p class="tw-desc">${esc(t('h.auctionSub'))}</p>
+        <div class="vsub">📱 <span id="vote-count"></span></div>
+        <div class="vote-grid">${S.players.filter(p => !p.ghost).map((p, i) => `<div class="fighter" data-f="${p.id}" style="animation-delay:${i * 50}ms">${medal(p)}<span class="nm">${esc(p.name)}</span></div>`).join('')}</div>
+      </div>`, 'ov-auction-bg');
+      Sound.play('gavel'); setTimeout(() => { if (seq === my) Sound.play('sparkle'); }, 500);
+      say('v.auction');
+      updateVoteReady();
+      return;
+    }
+    const bids = [...(pd.bids || [])].reverse(); // vom kleinsten zum größten
+    const w = P(pd.winner);
+    showOverlay(`<div class="ov-inner ov-auction">
+      <div class="auc-title"><span>🔨</span> ${esc(t('h.auction'))}</div>
+      <div class="auc-row"><div class="auc-item small">${h.emoji}</div><div class="auc-name">${esc(t('h.' + pd.h))}</div></div>
+      <div class="auc-bids" id="auc-bids"></div>
+      <div class="auc-sold hidden" id="auc-sold">${w ? `${medal(w)}<div class="sold-stamp">${esc(t('h.sold', { a: w.name, n: fmt(pd.price, lang) }))}</div>` : `<div class="sold-stamp unsold">${esc(t('h.unsold'))}</div>`}</div>
+    </div>`, 'ov-auction-bg');
+    const box = $('#auc-bids');
+    const step = Math.min(700, 4200 / Math.max(1, bids.length));
+    for (const b of bids) {
+      if (seq !== my) return;
+      const p = P(b.pid);
+      box.insertAdjacentHTML('beforeend', `<div class="auc-bid ${b.pid === pd.winner ? 'top' : ''}">${medal(p, 'wsm')}<span>${esc(nm(b.pid))}</span><b class="money">${fmt(b.amount, lang)}</b></div>`);
+      Sound.play('coin');
+      await sleep(step);
+    }
+    if (seq !== my) return;
+    say('v.sold');
+    await sleep(900);
+    if (seq !== my) return;
+    $('#auc-sold').classList.remove('hidden');
+    Sound.play('gavel'); setTimeout(() => Sound.play('gavel'), 250); setTimeout(() => { Sound.play('crash'); if (w) { Sound.play('applause'); confetti({ coins: true, count: 60 }); } else Sound.play('wahwah'); }, 520);
+    if (w) floater(w.id, h.emoji + ' −' + pd.price, 'neutral');
   }
 
   window.__otto = () => S;

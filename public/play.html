@@ -54,12 +54,14 @@
       </button>
       <div class="phead-right">
         <div class="lang-switch small" data-langswitch><button data-lang="de">DE</button><button data-lang="tr">TR</button></div>
+        <button class="hbtn" id="deal-btn" aria-label="Verträge">🤝<i id="deal-badge" class="badge hidden"></i></button>
         <button class="hbtn" id="chat-btn" aria-label="Chat">💬<i id="chat-badge" class="badge hidden"></i></button>
         <button class="hbtn" id="dossier-btn" aria-label="Dossier">📂</button>
       </div>
     </header>
     <div class="pbar" id="pbar"><div id="pbar-fill"></div></div>
     <main id="view" class="view"></main>
+    <div id="sab-layer" class="sab-layer"></div>
   </section>
 
   <!-- Auswahl-Blatt -->
@@ -85,8 +87,8 @@
   <!-- Porträt-Studio -->
   <div id="photo" class="photo-modal hidden" role="dialog" aria-modal="true">
     <div class="photo-inner">
-      <h2 class="display" data-i="p.photoTitle"></h2>
-      <p class="sub" data-i="p.photoHint"></p>
+      <h2 class="display" id="photo-title" data-i="p.photoTitle"></h2>
+      <p class="sub" id="photo-hint" data-i="p.photoHint"></p>
       <div class="cam-stage" id="cam-stage">
         <video id="cam-video" playsinline muted autoplay></video>
         <canvas id="cam-shot" class="hidden" width="256" height="256"></canvas>

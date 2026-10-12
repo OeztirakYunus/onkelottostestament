@@ -2,7 +2,7 @@
 
 Ein chaotisches Erbschafts-Partyspiel für **2 bis 15 Spieler**. Der Fernseher zeigt die Villa, jedes Handy ist eine geheime Kartenhand. Spielbar auf **Deutsch** und **Türkisch**.
 
-**Drin:** 100 Testamentsklauseln · 24 Aktionskarten · 14 Minispiele · 6 geheime Rollen · Porträtfotos statt Emojis · geheimer Privat- und Familienchat · eigene Musik · über 40 Soundeffekte · natürliche Notar-Stimme auf Deutsch und Türkisch · türkische Bot-Verwandte
+**Drin:** 105 Testamentsklauseln · 24 Aktionskarten · 14 Minispiele · 6 geheime Rollen · 8 Plot-Twists · Erbstück-Auktionen · Handel & Verträge · Zuschauer-Wetten & Tomaten-Sabotage · Foto-Streiche, Gesucht-Plakat & Selfie-Duelle · Otto-Awards · Porträtfotos statt Emojis · frei einstellbare Familien mit Wappen · geheimer Privat- und Familienchat · eigene Musik · über 40 Soundeffekte · natürliche Notar-Stimme auf Deutsch und Türkisch · türkische Bot-Verwandte
 
 *2 ile 15 oyuncu için kaotik bir miras oyunu. Televizyon konağı gösterir, her telefon gizli bir kart elidir. **Almanca** ve **Türkçe** oynanabilir.*
 
@@ -29,7 +29,7 @@ Dann:
 |---|---|
 | [`public/docs/REGELWERK.md`](public/docs/REGELWERK.md) | Komplettes Regelwerk (Deutsch) |
 | [`public/docs/KURALLAR.md`](public/docs/KURALLAR.md) | Tam oyun kuralları (Türkçe) |
-| [`public/docs/KLAUSELN.md`](public/docs/KLAUSELN.md) | Alle 100 Testamentsklauseln, zweisprachig |
+| [`public/docs/KLAUSELN.md`](public/docs/KLAUSELN.md) | Alle 105 Testamentsklauseln, zweisprachig |
 | `http://localhost:3000/regeln` | Regelwerk und Klauseln im Browser |
 
 ## Probleme? · Sorunlar?
@@ -56,9 +56,10 @@ Aufbau:
 ```
 server/index.js    HTTP-Server, Räume, Verbindungen
 server/game.js     Spiel-Engine (Phasen, Räume, Karten, Duelle, Finale)
+server/features.js Wetten, Sabotage, Streiche, Selfies, Verträge, Auktion, Plot-Twists, Awards
 server/ws.js       WebSocket-Server ohne Abhängigkeiten
 server/qr.js       QR-Code-Generator ohne Abhängigkeiten
-shared/data.js     Räume, 24 Karten, 6 Rollen, Erbstücke, Quizfragen, 14 Minispiele, 100 Klauseln
+shared/data.js     Räume, 24 Karten, 6 Rollen, Erbstücke, Quizfragen, 14 Minispiele, 105 Klauseln, 8 Plot-Twists, Awards
 shared/i18n.js     Alle Texte auf Deutsch und Türkisch
 public/host.html   Fernseher-Ansicht   (js/host.js, css/host.css)
 public/play.html   Handy-Controller    (js/play.js, css/play.css)
@@ -83,4 +84,4 @@ Die Stimme stammt von den freien neuronalen Piper-Stimmen „Thorsten“ (Deutsc
    ```
    Es werden nur geänderte Texte neu aufgenommen.
 
-Zum Testen schneller spielen: `OTTO_TIME_SCALE=0.3 npm start` (alle Wartezeiten × 0,3).
+Zum Testen schneller spielen: `OTTO_TIME_SCALE=0.3 npm start` (alle Wartezeiten × 0,3). Plot-Twists erzwingen: `OTTO_TWISTS=tax_raid,earthquake npm start`, Auktion nach jeder Runde: `OTTO_AUCTION_EVERY=1 npm start`.

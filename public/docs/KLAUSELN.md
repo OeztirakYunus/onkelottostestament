@@ -1,10 +1,10 @@
-# Die 100 Testamentsklauseln · 100 Vasiyet Maddesi
+# Die 105 Testamentsklauseln · 105 Vasiyet Maddesi
 
 *Diese Datei wird automatisch aus dem Spiel erzeugt (`npm run docs`). · Bu dosya oyundan otomatik olarak üretilir.*
 
-Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel „Letzte Klausel“ (Nr. 100). Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt).
+Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel „Letzte Klausel“ (Nr. 105). Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt). Bei 📸-Klauseln machen alle ein Selfie, abgestimmt wird über die Fotos.
 
-Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (100 numara) okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa).
+Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (105 numara) okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa). 📸 maddelerinde herkes selfie çeker ve fotoğraflar oylanır.
 
 | Nr. | Art | Klausel (Deutsch) | Tür | Madde (Türkçe) |
 |---|---|---|---|---|
@@ -107,4 +107,9 @@ Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (10
 | 97 | Abstimmung | Sprachkurs: Jeder sagt einen Satz auf Deutsch und einen auf Türkisch. Die beste Aussprache gewinnt (+90). | Oylama | Dil kursu: Herkes bir cümle Almanca, bir cümle Türkçe söylüyor. En iyi telaffuz kazanır (+90). |
 | 98 | Abstimmung | Geschichtenerzähler: Erzählt, wie Otto wirklich gestorben ist. Die beste Geschichte gewinnt (+100). | Oylama | Hikâye anlatıcısı: Otto'nun gerçekte nasıl öldüğünü anlatın. En iyi hikâye kazanır (+100). |
 | 99 | Abstimmung | Familienfoto: Alle zeigen ihre beste Erbschafts-Pose. Die beste Pose gewinnt (+80). | Oylama | Aile fotoğrafı: Herkes en iyi miras pozunu veriyor. En iyi poz kazanır (+80). |
-| 100 | Finale | Letzte Klausel: Alle Räume zahlen dreifach. Danach wird das Testament eröffnet! | Final | Son madde: Tüm odalar üç kat ödüyor. Ardından vasiyet açılıyor! |
+| 100 | Abstimmung | Selfie-Duell! Macht euer breitestes Zahnpasta-Grinsen. Die Familie wählt das strahlendste (+100). | Oylama | Selfie düellosu! En geniş diş macunu reklamı gülüşünüzü yapın. Aile en parlak olanı seçer (+100). |
+| 101 | Abstimmung | Selfie-Duell! Schaut so reich und arrogant wie nur möglich. Wer am meisten nach Erbe aussieht, kassiert +100. | Oylama | Selfie düellosu! Olabildiğince zengin ve kibirli bakın. En çok mirasyedi görünen +100 alır. |
+| 102 | Abstimmung | Selfie-Duell! Macht euer schuldigstes Gesicht. Das verdächtigste Foto gewinnt +100. | Oylama | Selfie düellosu! En suçlu yüzünüzü yapın. En şüpheli fotoğraf +100 kazanır. |
+| 103 | Abstimmung | Selfie-Duell! Erschreckt die Familie mit eurer gruseligsten Geister-Grimasse (+100). | Oylama | Selfie düellosu! Aileyi en korkunç hayalet suratınızla korkutun (+100). |
+| 104 | Abstimmung | Selfie-Duell! Imitiert den Notar. Das würdevollste Beamtengesicht gewinnt +100. | Oylama | Selfie düellosu! Noteri taklit edin. En ağırbaşlı memur yüzü +100 kazanır. |
+| 105 | Finale | Letzte Klausel: Alle Räume zahlen dreifach. Danach wird das Testament eröffnet! | Final | Son madde: Tüm odalar üç kat ödüyor. Ardından vasiyet açılıyor! |

@@ -40,6 +40,14 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': ph.type, 'Cache-Control': 'private, max-age=86400', 'Content-Length': ph.buf.length });
     return res.end(ph.buf);
   }
+  const sm = /^\/selfie\/([A-Z]{4})\/(p[0-9a-f]{8})$/.exec(url);
+  if (sm) {
+    const g = games.get(sm[1]);
+    const ph = g && g.selfies && g.selfies.get(sm[2]);
+    if (!ph) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': ph.type, 'Cache-Control': 'no-store', 'Content-Length': ph.buf.length });
+    return res.end(ph.buf);
+  }
   let base = path.join(ROOT, 'public');
   if (url.startsWith('/shared/')) { base = path.join(ROOT, 'shared'); url = url.slice('/shared'.length); }
   const file = path.normalize(path.join(base, url));
@@ -83,6 +91,11 @@ function wire(g) {
     });
   };
   g.onWhisper = (w) => { for (const c of g.hosts) c.send('whisper', w); };
+  const toPlayer = (pid, t, d) => { const p = g.get(pid); const c = p && p.socketId && clientsById.get(p.socketId); if (c) c.send(t, d); };
+  // Sabotage: Opfer-Handy wackelt, Fernseher zeigt fliegende Tomaten
+  g.onSabotage = (s) => { toPlayer(s.to, 'sabotaged', s); for (const c of g.hosts) c.send('sabotage', s); };
+  g.onDeal = (d, pids) => pids.forEach(pid => toPlayer(pid, 'deal', d));
+  g.onDealEvent = (e) => { for (const c of g.hosts) c.send('dealEvent', e); };
   g.onChange = () => {
     if (g._pending) return;
     g._pending = true;
@@ -124,6 +137,7 @@ wss.on('connection', (client) => {
     },
     'host:lang': (lang) => { const g = hostGame(); if (g) { g.lang = lang === 'tr' ? 'tr' : 'de'; g.changed(); } },
     'host:settings': (s) => { const g = hostGame(); if (g && s) g.updateSettings(s); },
+    'host:famCycle': (pid) => { const g = hostGame(); if (g) g.cycleFamily(pid); },
     'host:addBot': () => { const g = hostGame(); if (g) g.addBot(); },
     'host:kick': (pid) => {
       const g = hostGame(); if (!g) return;
@@ -168,6 +182,7 @@ wss.on('connection', (client) => {
       client.data = { code: g.code, pid: p.id };
       ack({ ok: true, token: p.token, pid: p.id, code: g.code });
       client.send('chatHistory', g.chatFor(p));
+      client.send('dealHistory', g.dealsFor(p));
       g.changed();
     },
     'player:lang': (lang) => { const p = me(); if (p) { p.lang = lang === 'tr' ? 'tr' : 'de'; game().changed(); } },
@@ -177,6 +192,7 @@ wss.on('connection', (client) => {
       if (D.AVATARS.includes(av) && !g.players.some(x => x !== p && x.avatar === av)) { p.avatar = av; g.changed(); }
     },
     'player:photo': (dataUrl, ack) => { const g = game(), p = me(); ack(g && p ? g.setPhoto(p, dataUrl) : { error: 'nogame' }); },
+    'player:family': (fam) => { const g = game(), p = me(); if (g && p) g.setFamilyPick(p, fam); },
     'player:noPhoto': () => { const g = game(), p = me(); if (g && p) g.clearPhoto(p); },
     'player:chat': (msg, ack) => {
       const g = game(), p = me();
@@ -188,6 +204,15 @@ wss.on('connection', (client) => {
     'player:duel': (score) => { const g = game(), p = me(); if (g && p) g.submitDuel(p, score); },
     'player:vote': (target) => { const g = game(), p = me(); if (g && p) g.submitVote(p, target); },
     'player:finalvote': (votes) => { const g = game(), p = me(); if (g && p) g.submitFinalVote(p, votes); },
+    'player:bet': (b, ack) => { const g = game(), p = me(); const r = g && p && b ? g.submitBet(p, b.on, b.amount) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:sabotage': (s, ack) => { const g = game(), p = me(); const r = g && p && s ? g.submitSabotage(p, s.to, s.kind) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:selfie': (dataUrl, ack) => { const g = game(), p = me(); const r = g && p ? g.submitSelfie(p, dataUrl) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:deal': (o, ack) => { const g = game(), p = me(); const r = g && p ? g.proposeDeal(p, o) : { error: 'nogame' }; if (ack) ack(r.error ? { error: r.error } : { ok: true }); },
+    'player:dealRespond': (o, ack) => { const g = game(), p = me(); const r = g && p && o ? g.respondDeal(p, o.id, !!o.accept) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:dealCancel': (id, ack) => { const g = game(), p = me(); const r = g && p ? g.cancelDeal(p, id) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:dealAccuse': (id, ack) => { const g = game(), p = me(); const r = g && p ? g.accuseDeal(p, id) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:bid': (amount, ack) => { const g = game(), p = me(); const r = g && p ? g.submitBid(p, amount) : { error: 'nogame' }; if (ack) ack(r); },
+    'player:twist': (v, ack) => { const g = game(), p = me(); const r = g && p ? g.submitTwist(p, v) : { error: 'nogame' }; if (ack) ack(r); },
     'player:leave': () => {
       const g = game(), p = me(); if (!g || !p) return;
       if (g.phase === 'lobby') g.kick(p.id); else { p.connected = false; p.socketId = null; g.changed(); }
@@ -206,7 +231,9 @@ wss.on('connection', (client) => {
       g.changed();
       if (g.phase === 'plan') g.checkAllPlanned();
       if (g.phase === 'duel') g.checkDuelDone();
-      if (g.phase === 'vote') g.checkVoteDone();
+      if (g.phase === 'vote') { g.checkVoteDone(); g.checkSelfieDone(); }
+      if (g.phase === 'twist') g.checkTwistDone();
+      if (g.phase === 'auction') g.checkAuctionDone();
       if (g.phase === 'finalvote') g.checkFinalDone();
     }
   });

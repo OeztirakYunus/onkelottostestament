@@ -19,10 +19,10 @@ function kind(fx, lang) {
   return k.room;
 }
 
-let md = '# Die 100 Testamentsklauseln · 100 Vasiyet Maddesi\n\n';
+let md = `# Die ${D.CLAUSES.length} Testamentsklauseln · ${D.CLAUSES.length} Vasiyet Maddesi\n\n`;
 md += '*Diese Datei wird automatisch aus dem Spiel erzeugt (`npm run docs`). · Bu dosya oyundan otomatik olarak üretilir.*\n\n';
-md += 'Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel „Letzte Klausel“ (Nr. 100). Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt).\n\n';
-md += 'Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (100 numara) okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa).\n\n';
+md += `Jede Runde zieht der Notar eine zufällige Klausel. Die letzte Runde hat immer die Klausel „Letzte Klausel“ (Nr. ${D.CLAUSES.length}). Manche Klauseln kommen nur, wenn sie Sinn ergeben (z. B. „Séance“ nur, wenn es Geister gibt). Bei 📸-Klauseln machen alle ein Selfie, abgestimmt wird über die Fotos.\n\n`;
+md += `Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (${D.CLAUSES.length} numara) okunur. Bazı maddeler yalnızca anlamlı olduklarında gelir (örneğin „Ruh çağırma seansı“ sadece hayalet varsa). 📸 maddelerinde herkes selfie çeker ve fotoğraflar oylanır.\n\n`;
 md += '| Nr. | Art | Klausel (Deutsch) | Tür | Madde (Türkçe) |\n|---|---|---|---|---|\n';
 [...D.CLAUSES.filter(c => !c.fx.final), ...D.CLAUSES.filter(c => c.fx.final)].forEach((c, i) => {
   const de = I.t('de', 'clause.' + c.id), tr = I.t('tr', 'clause.' + c.id);

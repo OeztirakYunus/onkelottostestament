@@ -61,6 +61,17 @@
             <select id="set-time"><option value="20">20</option><option value="25">25</option><option value="35">35</option><option value="45">45</option><option value="60">60</option></select>
           </label>
         </div>
+        <div class="fam-settings">
+          <span class="fs-label">👨‍👩‍👧 <span data-i="h.families"></span></span>
+          <div class="seg" id="fam-mode">
+            <button data-fm="off" data-i="h.famOff"></button><button data-fm="random" data-i="h.famRandom"></button><button data-fm="choose" data-i="h.famChoose"></button>
+          </div>
+          <label class="setting" id="fam-count-wrap"><span data-i="h.famCount"></span>
+            <select id="fam-count"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+          </label>
+          <p class="fam-hint" id="fam-hint"></p>
+          <div class="fam-board" id="fam-board"></div>
+        </div>
         <div class="unlocks">
           <h3 data-i="h.unlocks"></h3>
           <ul>
@@ -70,7 +81,6 @@
             <li data-n="7"><span>🔮</span><span data-i="h.unlock7"></span></li>
             <li data-n="8"><span>🤡</span><span data-i="h.unlock8"></span></li>
             <li data-n="9"><span>🕸️</span><span data-i="h.unlock9"></span></li>
-            <li data-n="10"><span>🌳</span><span data-i="h.unlock10"></span></li>
           </ul>
         </div>
         <button id="btn-start" class="btn big blood start-btn"></button>
@@ -102,6 +112,8 @@
   <div id="overlay" class="overlay hidden"></div>
   <div id="event-banner" class="event-banner"></div>
   <div id="whispers" class="whispers"></div>
+  <div id="deal-feed" class="deal-feed"></div>
+  <div id="fx-layer" class="fx-layer"></div>
 
   <!-- Sitzung beenden: Sicherheitsabfrage -->
   <div id="end-confirm" class="end-confirm hidden" role="dialog" aria-modal="true">

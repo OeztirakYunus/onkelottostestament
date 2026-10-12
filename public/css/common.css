@@ -112,6 +112,20 @@ button { font: inherit; cursor: pointer; }
 .medal.ghost { background: radial-gradient(circle at 40% 35%, #e6fff8, #7fbfb1); opacity: .75; filter: saturate(.5); }
 .medal.ghost::after { content: '👻'; position: absolute; right: -.4em; top: -.4em; font-size: .6em; }
 
+/* Foto-Streiche */
+.medal .prank { position: absolute; pointer-events: none; z-index: 2; line-height: 1; }
+.prank-nose { width: 26%; height: 26%; left: 37%; top: 46%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9a9a 0 18%, #e3121e 45%, #8f0710 100%);
+  box-shadow: 0 .08em .15em rgba(0, 0, 0, .5); animation: prank-honk 1.6s ease-in-out infinite; }
+.prank-stache { width: 62%; left: 19%; top: 58%; animation: prank-wiggle 2.2s ease-in-out infinite; transform-origin: 50% 40%; }
+.prank-stache svg { width: 100%; display: block; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .4)); }
+.prank-shades { font-size: .78em; left: 50%; top: 30%; transform: translateX(-50%); }
+.prank-tp { font-size: .9em; left: 50%; top: -38%; transform: translateX(-50%) rotate(-8deg); animation: prank-wiggle 2.6s ease-in-out infinite; }
+.prank-snake { font-size: .7em; right: -.35em; bottom: -.3em; animation: prank-honk 1.2s ease-in-out infinite; }
+.medal.pranked:has(.prank-snake) { box-shadow: 0 0 0 3px #5fbf3f, 0 0 0 5px rgba(0, 0, 0, .35), 0 0 18px rgba(95, 191, 63, .7); }
+@keyframes prank-honk { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes prank-wiggle { 0%, 100% { rotate: -4deg; } 50% { rotate: 4deg; } }
+
 .money { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--brass-hi); white-space: nowrap; }
 .money::before { content: '🪙'; margin-right: .25em; font-size: .9em; }
 .pos { color: var(--good); }

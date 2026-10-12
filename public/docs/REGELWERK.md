@@ -80,6 +80,11 @@ Jeder Raum zahlt aus (siehe Tabelle unten). Danach wirken Klauseln, die sich auf
 
 Bei Klauseln wie „Schweigeklausel“ oder „Alibi-Prüfung“ stimmen alle auf dem Handy ab. Wer die meisten Stimmen bekommt, erhält den Bonus oder die Strafe der Klausel. Bei Gleichstand entscheidet das Los. Man kann nicht für sich selbst stimmen.
 
+### Zwischen den Runden: Auktion und Plot-Twist
+
+- Nach jeder **dritten Runde** kommt ein **Erbstück unter den Hammer** (siehe „Erbstück-Auktion“).
+- Ab Runde 2 kann jederzeit ein **Plot-Twist** einschlagen (höchstens drei pro Partie, nie vor der letzten Runde).
+
 ## Die Räume
 
 | Raum | Wirkung |
@@ -183,8 +188,61 @@ Nach der letzten Runde:
 4. **Die Wahrsagerin** wird enthüllt, mit ihren Treffern.
 5. **Der Familienclown** wird enthüllt. Für jede Verdächtigung, die mehrheitlich auf ihn fiel, gibt es +250.
 6. **Die Katze** wird enthüllt. Ist sie die Ärmste, bekommt sie +400.
-7. Bei **Familienzweigen** bekommt jedes Mitglied der reichsten Familie +100.
-8. **Alle Rollen** werden aufgedeckt, dann folgt das **Siegerpodest**.
+7. Wird mit **Familien** gespielt, bekommt jedes Mitglied der reichsten Familie +100.
+8. **Die Otto-Awards:** Bis zu acht Spaß-Auszeichnungen für die größten Peinlichkeiten der Partie – z. B. 🥀 *Das ewige Opfer* (am häufigsten beklaut), 💬 *Die Plaudertasche*, 🍌 *Goldene Bananenschale*, 🍅 *Tomatenwerfer*, 🎰 *Zocker des Jahres*, 🐍 *Die Schlange* oder 🔨 *Kaufsüchtig*. Jeder sieht seine Awards auch auf dem Handy.
+9. **Alle Rollen** werden aufgedeckt, dann folgt das **Siegerpodest**.
+
+## Zuschauer: Wetten und Sabotage
+
+Wer bei einem Familienstreit **nicht mitspielt**, schaut nicht nur zu:
+
+- **Wetten:** Während der Ankündigung und des Spiels setzt du 10 bis 200 Taler auf einen Duellanten. Gewinnt er, bekommst du deinen Einsatz **mal (Zahl der Gegner)** zurück (bei einem Zweikampf also doppelt). Verliert er, ist der Einsatz weg. Alle Wetten stehen live auf dem Fernseher.
+- **Sabotage:** Während das Minispiel läuft, hast du **3 Würfe** und bewirfst einen Duellanten:
+  - 🍅 **Tomate** – klatscht quer über sein Handy,
+  - 📳 **Wackeln** – sein Bildschirm bebt,
+  - 🌫️ **Nebel** – alles verschwimmt,
+  - 🙃 **Kopfstand** – sein Bildschirm steht kurz auf dem Kopf.
+  
+  Auf dem Fernseher fliegen die Geschosse sichtbar zum Opfer. Geister dürfen sabotieren, aber nicht wetten.
+
+## Foto-Streiche und das Gesucht-Plakat
+
+- **Verlierer werden verziert:** Wer ein Duell verliert oder per Abstimmung eine Strafe kassiert, bekommt für eine Runde eine **Clownsnase**, einen **Schnurrbart**, eine **Gangster-Brille** oder einen **Klopapier-Turban** auf sein Porträt, überall auf Fernseher und Handys.
+- **GESUCHT:** Ab Runde 2 hängt zu Beginn der Planung ein Steckbrief des **reichsten Erben** auf dem Fernseher. Wer ihn in dieser Runde als Erster beklaut (Dieb, Rechnung oder Kartenklau), kassiert **+50 Kopfgeld** obendrauf.
+
+## Selfie-Duelle
+
+Fünf Klauseln (📸) sind **Selfie-Duelle**: Alle Menschen machen auf dem Handy ein Selfie zum Thema der Klausel („Schaut so reich wie möglich!“). Die Fotos erscheinen als Polaroids auf dem Fernseher, und die Familie stimmt ab, welches gewinnt (+100). Selfies ersetzen nicht das Profilbild. Machen weniger als zwei Personen ein Selfie, wird ganz normal über alle abgestimmt.
+
+## Handel und Verträge
+
+Über den Knopf **🤝** oben auf dem Handy kannst du jederzeit (außer in Lobby und Finale) **Verträge** anbieten:
+
+- **Ich zahle** einen Betrag, **ich will** einen Betrag, **ich gebe eine Karte** aus meiner Hand,
+- und/oder ein **Versprechen**: „Ich gehe nächste Runde nicht in den Tresor“, „Ich spiele keine Karte gegen dich“, „Ich stimme nie gegen dich“, „Ich gehe in denselben Raum wie du“, „Ich beklaue dich nie wieder“ oder ein **eigener Text**.
+
+Der andere kann **unterschreiben** oder **ablehnen**. Beim Unterschreiben werden Geld und Karte sofort übertragen. Ob Versprechen eingehalten werden, prüft niemand. Aber: Jeder Vertragspartner kann jederzeit **🚨 Vertragsbruch melden**. Dann wird der andere öffentlich auf dem Fernseher als **SCHLANGE** gebrandmarkt, das Versprechen wird vorgelesen, und sein Porträt trägt eine Runde lang eine 🐍. Wer zu Unrecht meldet? Tja – das klärt ihr am Tisch. Höchstens 3 offene Angebote pro Person.
+
+## Erbstück-Auktion
+
+Nach jeder dritten Runde kommt ein Erbstück unter den Hammer. Alle bieten **geheim** auf dem Handy, das **höchste Gebot** gewinnt und zahlt seinen Betrag (bei Gleichstand entscheidet das Los). Der Wert des Erbstücks ist geheim und wird erst im Finale geschätzt – es kann auch **verflucht** sein. Auf dem Fernseher werden die Gebote vom kleinsten zum größten aufgedeckt, dann knallt der Hammer: „Verkauft!“
+
+## Plot-Twists
+
+Manchmal passiert zwischen zwei Runden etwas völlig Unerwartetes. Der Fernseher knallt ein großes **PLOT-TWIST!** auf den Bildschirm:
+
+| Twist | Was passiert |
+|---|---|
+| ⚰️ **Otto lebt!** | Er war nur scheintot. Otto sammelt 20 % von allen ein und verteilt die Summe gleichmäßig. |
+| 🚔 **Steuerfahndung!** | Alle verstecken sich geheim auf dem Handy in einem Raum. Die Fahnder stürmen einen zufälligen Raum: Wer dort steckt, verliert 30 %. |
+| 📜 **Das zweite Testament!** | Der Reichste zahlt 150, die (bis zu drei) Ärmsten bekommen je 150. |
+| 🌋 **Erdbeben!** | Alle Erbstücke fliegen durcheinander und landen bei neuen Besitzern. |
+| 🎭 **Rollentausch!** | Zwei Verwandte tauschen heimlich ihre Rollen. Nur die beiden erfahren es auf dem Handy. |
+| 🗝️ **Schatzsuche!** | Alle tippen 9 Sekunden lang wie verrückt auf „GRABEN!“. Die drei Schnellsten bekommen 150, 100 und 50. |
+| 🦅 **Die Geier kommen!** | Alle Handkarten sind weg, jeder bekommt 2 neue. |
+| 🤠 **Cousin aus Amerika!** | Cousin Billy aus Texas will seinen Anteil: Jeder zahlt 10 %. |
+
+Höchstens drei Plot-Twists pro Partie, nie zwei gleiche.
 
 ## Spielerzahl: 2 bis 15
 
@@ -197,11 +255,33 @@ Nach der letzten Runde:
 | 7 | Zusätzlich die **Wahrsagerin**. |
 | 8 | Zusätzlich der **Familienclown**. Ab hier gibt es alle sechs Rollen. |
 | 9 | Die Villa bekommt **Dachboden** und **Ballsaal** (8 Räume). |
-| 10–15 | **Familienzweige**: Teams aus etwa 3 Personen. Jeder spielt für sich, aber die reichste Familie bekommt am Ende einen Bonus. Familienmitglieder stehen im Dossier. |
+
+## Familien (frei einstellbar)
+
+Der Gastgeber legt in der Lobby fest, ob mit Familien gespielt wird, und zwar bei **jeder Spielerzahl**:
+
+| Einstellung | So geht's |
+|---|---|
+| **Aus** | Jeder spielt für sich allein. |
+| **Zufällig** | Beim Start werden alle gleichmäßig auf die Familien ausgelost. |
+| **Selbst wählen** | Jeder tippt auf dem Handy seine Familie an. Der Gastgeber kann Erben (auch Bots) am Fernseher durch Antippen umsetzen. Wer nichts wählt, kommt in die kleinste Familie. |
+
+Es gibt **2 bis 6 Familien**, jede mit eigenem Wappen, eigener Farbe und eigenem Motto:
+
+| Wappen | Familie | Motto |
+|---|---|---|
+| 🦷 | **Die Gebiss-Gang** | „Wir beißen uns durch!“ |
+| 🥙 | **Clan Kebab** | „Scharf, aber herzlich.“ |
+| 🥿 | **Die Pantoffelhelden** | „Gemütlich zum Reichtum.“ |
+| 🍯 | **Haus Baklava** | „Süß, klebrig, gefährlich.“ |
+| 🦊 | **Die Erbschleicher** | „Erst lächeln, dann erben.“ |
+| 🧦 | **Die Sockenbande** | „Wir finden immer, was andere verstecken.“ |
+
+Beim Spielstart stellt der Fernseher die Familien feierlich vor. Im Spiel trägt jeder das Wappen seiner Familie, es gibt einen **Familienchat**, und am Ende bekommt **jedes Mitglied der reichsten Familie +100**. Trotzdem gewinnt am Schluss eine einzelne Person: Familie ist schön, aber Geld ist Geld.
 
 ## Geheime Nachrichten (Chat)
 
-Über den Knopf **💬** auf dem Handy kann jeder **privat** mit jedem anderen schreiben: Bündnisse schmieden, lügen, drohen, bestechen. Bei **Familienzweigen** (ab 10 Spielern) gibt es zusätzlich einen **Familienchat**, den nur die eigene Familie lesen kann.
+Über den Knopf **💬** auf dem Handy kann jeder **privat** mit jedem anderen schreiben: Bündnisse schmieden, lügen, drohen, bestechen. Wird mit **Familien** gespielt, gibt es zusätzlich einen **Familienchat**, den nur die eigene Familie lesen kann.
 
 Der Fernseher zeigt **nie den Inhalt**, aber er verrät, **dass** geflüstert wird: „Elif flüstert Murat etwas zu…“. Das sorgt garantiert für Misstrauen. Auch die Bot-Verwandten antworten, allerdings selten hilfreich.
 
@@ -237,6 +317,6 @@ Bots heißen zum Beispiel **Ayşe Teyze**, **Mehmet Amca** oder **Hüseyin Dede*
 - **Als Wahrsagerin:** Verrate nicht zu früh, was du weißt. Sonst wirst du zur Zielscheibe.
 - **Chat nutzen:** Ein geheimes Bündnis für den Tresor ist Gold wert. Ob es hält, ist eine andere Frage.
 
-## Die 100 Testamentsklauseln
+## Die 105 Testamentsklauseln
 
 Die vollständige Liste steht in **KLAUSELN.md** und im Regelwerk im Browser unter `http://localhost:3000/regeln`.

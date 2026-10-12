@@ -38,7 +38,7 @@ class Game {
     this.timeScale = timeScale;
     this.hostToken = tok();
     this.players = [];
-    this.settings = { rounds: 8, planTime: 35 };
+    this.settings = { rounds: 8, planTime: 35, famMode: 'off', famCount: 2 };
     this.phase = 'lobby';
     this.pd = {};
     this.round = 0;
@@ -56,6 +56,7 @@ class Game {
     this.chatId = 1;
     this.botTimers = new Set();
     this.lastDuel = null;
+    this.resetFeatures();
   }
 
   /* ---------------- Timer ---------------- */
@@ -88,7 +89,8 @@ class Game {
   active(p) { return p.isBot || p.connected; }
 
   resetPlayer(p) {
-    Object.assign(p, { money: 0, hand: [], heirlooms: [], role: 'relative', ghost: false, known: {}, catLives: 0, family: null, lastDelta: 0 });
+    Object.assign(p, { money: 0, hand: [], heirlooms: [], role: 'relative', ghost: false, known: {}, catLives: 0, family: null, lastDelta: 0, prank: null,
+      stats: { robbed: 0, chat: 0, cellar: 0, banana: 0, duelWin: 0, sabThrown: 0, sabGot: 0, betProfit: 0, broken: 0, cards: 0, ghostRounds: 0, auctionSpent: 0 } });
   }
 
   addPlayer({ name, avatar, lang, bot = false }) {
@@ -100,7 +102,7 @@ class Game {
     const color = D.COLORS.find(c => !usedC.has(c)) || pick(D.COLORS);
     const usedA = new Set(this.players.map(p => p.avatar));
     if (!D.AVATARS.includes(avatar) || usedA.has(avatar)) avatar = D.AVATARS.find(a => !usedA.has(a)) || pick(D.AVATARS);
-    const p = { id: 'p' + tok().slice(0, 8), token: tok(), name, avatar, color, photo: 0, lang: lang === 'tr' ? 'tr' : 'de', isBot: bot, connected: bot, socketId: null, chatTimes: [] };
+    const p = { id: 'p' + tok().slice(0, 8), token: tok(), name, avatar, color, photo: 0, famPick: null, lang: lang === 'tr' ? 'tr' : 'de', isBot: bot, connected: bot, socketId: null, chatTimes: [] };
     this.resetPlayer(p);
     this.players.push(p);
     this.changed();
@@ -122,7 +124,46 @@ class Game {
     const r = parseInt(s.rounds, 10), t = parseInt(s.planTime, 10);
     if ([5, 6, 8, 10, 12].includes(r)) this.settings.rounds = r;
     if ([20, 25, 35, 45, 60].includes(t)) this.settings.planTime = t;
+    if (['off', 'random', 'choose'].includes(s.famMode)) this.settings.famMode = s.famMode;
+    const fc = parseInt(s.famCount, 10);
+    if (fc >= 2 && fc <= D.FAMILIES.length) this.settings.famCount = fc;
+    // Wahl außerhalb der erlaubten Anzahl zurücksetzen
+    this.players.forEach(p => { if (p.famPick != null && p.famPick >= this.settings.famCount) p.famPick = null; });
     this.changed();
+  }
+
+  /* ---------------- Familien ---------------- */
+  setFamilyPick(p, fam) {
+    if (this.phase !== 'lobby' || !p || this.settings.famMode !== 'choose') return;
+    const f = parseInt(fam, 10);
+    p.famPick = (f >= 0 && f < this.settings.famCount) ? f : null;
+    this.changed();
+  }
+  // Gastgeber tippt auf einen Erben: in die nächste Familie setzen
+  cycleFamily(pid) {
+    const p = this.get(pid);
+    if (!p || this.phase !== 'lobby' || this.settings.famMode !== 'choose') return;
+    p.famPick = p.famPick == null ? 0 : (p.famPick + 1 < this.settings.famCount ? p.famPick + 1 : null);
+    this.changed();
+  }
+  buildFamilies() {
+    const { famMode, famCount } = this.settings;
+    this.families = null;
+    if (famMode === 'off' || this.players.length < 2) return;
+    const k = Math.min(famCount, this.players.length);
+    const fams = Array.from({ length: famCount }, (_, i) => ({ id: i, members: [] }));
+    const size = (i) => fams[i].members.length;
+    const smallest = () => { let best = 0; for (let i = 1; i < k; i++) if (size(i) < size(best)) best = i; return best; };
+    if (famMode === 'choose') {
+      this.players.forEach(p => { if (p.famPick != null && p.famPick < famCount) fams[p.famPick].members.push(p.id); });
+      shuffle(this.players.filter(p => p.famPick == null || p.famPick >= famCount)).forEach(p => fams[smallest()].members.push(p.id));
+    } else {
+      shuffle(this.players).forEach((p, i) => fams[i % k].members.push(p.id));
+    }
+    const used = fams.filter(f => f.members.length);
+    if (used.length < 2) return; // alle in einer Familie: dann ist es keine Familienpartie
+    this.families = used;
+    used.forEach(f => f.members.forEach(id => { this.get(id).family = f.id; }));
   }
 
   /* ---------------- Profilfoto ---------------- */
@@ -158,6 +199,7 @@ class Game {
     p.chatTimes = (p.chatTimes || []).filter(t => now - t < 6000);
     if (p.chatTimes.length >= 6) return { error: 'tooFast' };
     p.chatTimes.push(now);
+    if (p.stats) p.stats.chat++;
     let msg;
     if (to === 'fam') {
       if (!this.families || p.family == null) return { error: 'nofam' };
@@ -205,12 +247,8 @@ class Game {
     const roles = Object.keys(D.ROLE_UNLOCK).filter(r => n >= D.ROLE_UNLOCK[r]);
     shuffle(this.players).forEach((p, i) => { if (roles[i]) { p.role = roles[i]; if (p.role === 'cat') p.catLives = 3; } });
 
-    this.families = null;
-    if (n >= 10) {
-      const k = Math.round(n / 3);
-      this.families = Array.from({ length: k }, (_, i) => ({ id: i, members: [] }));
-      shuffle(this.players).forEach((p, i) => { const f = this.families[i % k]; f.members.push(p.id); p.family = f.id; });
-    }
+    this.buildFamilies();
+    this.resetFeatures();
 
     this.players.forEach(p => this.drawCard(p, 2));
     this.heirloomDeck = shuffle(D.HEIRLOOMS.map(h => h.id));
@@ -225,8 +263,8 @@ class Game {
     this.totalRounds = this.settings.rounds;
     this.fv = null;
     this.rd = null;
-    this.setPhase('intro', {});
-    this.after(10, () => this.startRound());
+    this.setPhase('intro', { families: !!this.families });
+    this.after(this.families ? 17 : 10, () => this.nextRound());
     return true;
   }
 
@@ -237,6 +275,7 @@ class Game {
     this.round = 0; this.rd = null; this.fv = null; this.families = null;
     this.rooms = [...D.BASE_ROOMS];
     this.chat = [];
+    this.resetFeatures();
     this.setPhase('lobby', {});
   }
 
@@ -291,7 +330,7 @@ class Game {
     this.clause = clause;
     this.fx = clause.fx;
     this.rd = { deltas: {}, plans: {}, closed: new Set((this.fx.closed || []).filter(r => this.rooms.includes(r))), learned: {} };
-    this.players.forEach(p => { p.lastDelta = 0; });
+    this.players.forEach(p => { p.lastDelta = 0; if (p.prank && this.round > p.prank.until) p.prank = null; });
     const nowLines = this.fx.now ? this.applyNow(this.fx.now) : [];
     this.setPhase('clause', { clause: clause.id, nowLines, vote: clause.fx.vote != null, final: !!clause.fx.final });
     this.after(nowLines.length ? 15 : 12, () => this.startPlan());
@@ -441,7 +480,8 @@ class Game {
   /* ---------------- Planung ---------------- */
   startPlan() {
     this.rd.plans = {};
-    this.setPhase('plan', { open: this.openRooms(), maxCards: this.fx.noCards ? 0 : (this.fx.maxCards || 1) });
+    this.markWanted();
+    this.setPhase('plan', { open: this.openRooms(), maxCards: this.fx.noCards ? 0 : (this.fx.maxCards || 1), wanted: this.rd.wanted || null, bounty: this.rd.wanted ? 50 : 0 });
     this.after(this.settings.planTime, () => this.doReveal());
     this.batch = true;
     this.players.filter(p => p.isBot).forEach(p => this.botPlan(p));
@@ -515,7 +555,7 @@ class Game {
       pos[p.id] = r; planned[p.id] = r;
     });
     const plays = [];
-    this.players.forEach(p => (rd.plans[p.id].cards || []).forEach(c => plays.push({ ...c, from: p.id })));
+    this.players.forEach(p => (rd.plans[p.id].cards || []).forEach(c => { plays.push({ ...c, from: p.id }); p.stats.cards++; }));
     this.players.forEach(p => {
       (rd.plans[p.id].cards || []).map(c => c.idx).sort((a, b) => b - a).forEach(i => p.hand.splice(i, 1));
     });
@@ -589,6 +629,7 @@ class Game {
       const others = openNow().filter(r => r !== pos[c.target]);
       const r = pick(others.length ? others : openNow()); pos[c.target] = r;
       ev.push({ k: 'rv.banana', card: 'banana', from: c.from, to: c.target, room: r, moved: { [c.target]: r } });
+      this.get(c.target).stats.banana++;
     });
 
     of('thief').forEach(c => {
@@ -596,6 +637,7 @@ class Game {
       if (shield(c, c.target)) return;
       const t = this.transfer(this.get(c.target), this.get(c.from), 60 * (fx.thiefMult || 1));
       ev.push({ k: 'rv.thief', card: 'thief', from: c.from, to: c.target, n: t });
+      this.robbed(c.from, c.target, ev);
     });
     of('invoice').forEach(c => {
       if (gardenSafe(c.target)) { ev.push({ k: 'ev.gardenSafe', card: 'invoice', from: c.from, to: c.target }); return; }
@@ -603,6 +645,7 @@ class Game {
       const t = this.get(c.target);
       const n = this.transfer(t, this.get(c.from), Math.max(20, Math.floor(t.money * 0.1)));
       ev.push({ k: 'rv.invoice', card: 'invoice', from: c.from, to: c.target, n });
+      this.robbed(c.from, c.target, ev);
     });
     of('magnet').forEach(c => {
       let total = 0;
@@ -615,6 +658,7 @@ class Game {
       const t = this.get(c.target), me = this.get(c.from);
       if (t.hand.length) { me.hand.push(t.hand.splice(Math.floor(Math.random() * t.hand.length), 1)[0]); if (me.hand.length > D.HAND_MAX) me.hand.shift(); }
       ev.push({ k: 'rv.pickcard', card: 'pickcard', from: c.from, to: c.target });
+      this.robbed(c.from, c.target, ev);
     });
     of('paparazzi').forEach(c => {
       if (shield(c, c.target)) return;
@@ -642,6 +686,7 @@ class Game {
         liv().filter(p => p.id !== c.from && pos[p.id] === room && !prot.has(p.id)).forEach(v => {
           if (v.role === 'cat' && v.catLives > 0) { v.catLives--; return; }
           total += this.transfer(v, this.get(c.from), 30 * (fx.extMult || 1));
+          v.stats.robbed++;
         });
       }
       ev.push({ k: 'rv.extortion', card: 'extortion', from: c.from, room, n: total });
@@ -723,14 +768,18 @@ class Game {
     if (type === 'safe') extra.secret = randInt(1, 100);
     const pids = this.rd.groups.flatMap(g => g.pids);
     this.rd.duel = { type, extra, scores: {} };
-    this.setPhase('duel', { stage: 'intro', type, q: extra.q || null, extra, groups: this.rd.groups, pids, reverse: !!this.fx.reverseDuel });
-    this.after(6, () => this.duelPlay());
+    this.rd.bets = {}; this.rd.sab = {};
+    const spectators = this.players.filter(p => !pids.includes(p.id)).length;
+    this.setPhase('duel', { stage: 'intro', type, q: extra.q || null, extra, groups: this.rd.groups, pids, reverse: !!this.fx.reverseDuel, bets: spectators > 0 });
+    this.botBets();
+    this.after(spectators ? 10 : 6, () => this.duelPlay());
   }
   duelPlay() {
     const d = this.rd.duel;
     const time = D.DUELS[d.type].time;
     this.setPhase('duel', { ...this.pd, stage: 'play', playTime: time });
     this.pd.pids.forEach(id => { const p = this.get(id); if (p.isBot) d.scores[id] = this.botScore(d.type, d.extra); });
+    this.botSabotage(time);
     this.after(time + 1, () => this.duelResult());
     this.checkDuelDone();
   }
@@ -800,7 +849,12 @@ class Game {
       winners[g.room] = arr[0].id;
     });
     const target = this.duelTarget(d.type, d.extra);
-    this.setPhase('duel', { ...this.pd, stage: 'result', scores: { ...d.scores }, ranking, winners, answer: target, secret: d.extra.secret || null, pop: d.extra.pop || null });
+    Object.values(winners).forEach(id => this.get(id).stats.duelWin++);
+    // Verlierer bekommen einen Foto-Streich
+    const pranked = [];
+    Object.values(ranking).forEach(ids => ids.slice(1).forEach(id => { const kind = this.prank(id); if (kind) pranked.push({ pid: id, kind }); }));
+    const betResults = this.settleBets(winners);
+    this.setPhase('duel', { ...this.pd, stage: 'result', scores: { ...d.scores }, ranking, winners, answer: target, secret: d.extra.secret || null, pop: d.extra.pop || null, betResults, pranked });
     this.after(8, () => this.settle(ranking));
   }
 
@@ -887,7 +941,7 @@ class Game {
           o.forEach(p => {
             const r = rd.clover && rd.clover.has(p.id) ? 0 : Math.random();
             if (r < 0.45) income(p, room, 180, 'ev.jackpot');
-            else if (r < 0.8 && !fx.cellarNoLoss) income(p, room, -90, 'ev.cellarLoss');
+            else if (r < 0.8 && !fx.cellarNoLoss) { income(p, room, -90, 'ev.cellarLoss'); p.stats.cellar++; }
             else line(room, 'ev.rats', { a: p.name }, p.id);
           });
           break;
@@ -970,15 +1024,21 @@ class Game {
 
   /* ---------------- Abstimmung ---------------- */
   startVote() {
+    if (this.fx.selfie && !this.rd.selfieDone) return this.startSelfie();
     this.rd.votes = {};
-    this.setPhase('vote', { stage: 'vote', clause: this.clause.id, amount: this.fx.vote });
-    this.players.filter(p => p.isBot).forEach(p => { this.rd.votes[p.id] = pick(this.players.filter(q => q !== p)).id; });
+    const cands = this.rd.selfieCands && this.rd.selfieCands.length >= 2 ? this.rd.selfieCands : null;
+    this.setPhase('vote', { stage: 'vote', clause: this.clause.id, amount: this.fx.vote, candidates: cands, selfieRound: cands ? this.round : null });
+    this.players.filter(p => p.isBot).forEach(p => {
+      const opts = (cands || this.players.map(q => q.id)).filter(id => id !== p.id);
+      if (opts.length) this.rd.votes[p.id] = pick(opts);
+    });
     this.after(30, () => this.voteResult());
     this.checkVoteDone();
   }
   submitVote(p, target) {
     if (this.phase !== 'vote' || this.pd.stage !== 'vote' || !p) return;
     if (!this.get(target) || target === p.id) return;
+    if (this.pd.candidates && !this.pd.candidates.includes(target)) return;
     this.rd.votes[p.id] = target;
     this.changed();
     this.checkVoteDone();
@@ -1001,16 +1061,20 @@ class Game {
       let amount = this.fx.vote;
       if (w.role === 'clown') { clown = true; amount = amount < 0 ? Math.abs(amount) : amount * 2; }
       applied = this.give(w, amount);
+      if (applied < 0) this.prank(winner);
     }
     const { newGhosts, revived } = this.ghostCheck();
-    this.setPhase('vote', { ...this.pd, stage: 'result', counts, winner, applied, tie: top.length > 1, newGhosts, revived, clown });
+    this.setPhase('vote', { ...this.pd, stage: 'result', counts, winner, applied, tie: top.length > 1, newGhosts, revived, clown, prank: winner && applied < 0 ? (this.get(winner).prank || {}).kind : null });
     this.after(8, () => this.endRound());
   }
 
   endRound() {
+    this.players.filter(p => p.ghost).forEach(p => p.stats.ghostRounds++);
     if (this.round >= this.totalRounds) this.startFinalVote();
-    else this.startRound();
+    else this.maybeAuction(() => this.nextRound());
   }
+  // Vor jeder neuen Runde kann ein Plot-Twist passieren
+  nextRound() { this.maybeTwist(() => this.startRound()); }
 
   /* ---------------- Finale ---------------- */
   startFinalVote() {
@@ -1110,6 +1174,8 @@ class Game {
       steps.push({ t: 'family', ranking: sums });
     }
 
+    const awards = this.computeAwards();
+    if (awards.length) steps.push({ t: 'awards', awards });
     steps.push({ t: 'roles', roles: Object.fromEntries(P.map(p => [p.id, p.role])) });
     const ranking = [...P].sort((a, b) => b.money - a.money).map(p => ({ pid: p.id, money: p.money, before: before[p.id] }));
     steps.push({ t: 'podium', ranking });
@@ -1121,8 +1187,10 @@ class Game {
     switch (this.phase) {
       case 'plan': return !!(this.rd && this.rd.plans[p.id]);
       case 'duel': return this.pd.stage === 'play' && this.rd.duel.scores[p.id] !== undefined;
-      case 'vote': return !!(this.rd && this.rd.votes && this.rd.votes[p.id]);
+      case 'vote': return this.pd.stage === 'selfie' ? !!(this.rd && this.rd.selfies && this.rd.selfies[p.id]) : !!(this.rd && this.rd.votes && this.rd.votes[p.id]);
       case 'finalvote': return !!(this.fv && this.fv.votes[p.id]);
+      case 'twist': return !!(this.rd && this.rd.twistIn && this.rd.twistIn[p.id] !== undefined);
+      case 'auction': return !!(this.rd && this.rd.auction && this.rd.auction.bids[p.id] !== undefined);
     }
     return false;
   }
@@ -1135,10 +1203,12 @@ class Game {
       closed: this.rd ? [...this.rd.closed] : [],
       clause: this.clause ? this.clause.id : null,
       families: this.families ? this.families.map(f => ({ id: f.id, members: f.members })) : null,
+      bets: this.phase === 'duel' && this.rd && this.rd.bets ? this.rd.bets : null,
       players: this.players.map(p => ({
         id: p.id, name: p.name, avatar: p.avatar, color: p.color, photo: p.photo || 0, money: p.money, ghost: p.ghost,
-        connected: p.connected, isBot: p.isBot, family: p.family, heirlooms: p.heirlooms,
-        cards: p.hand.length, lastDelta: p.lastDelta, done: this.isDone(p)
+        connected: p.connected, isBot: p.isBot, family: p.family, famPick: p.famPick, heirlooms: p.heirlooms,
+        cards: p.hand.length, lastDelta: p.lastDelta, done: this.isDone(p),
+        prank: p.prank ? p.prank.kind : null
       }))
     };
   }
@@ -1153,9 +1223,18 @@ class Game {
       duelScore: rd && rd.duel ? rd.duel.scores[p.id] : undefined,
       vote: rd && rd.votes ? rd.votes[p.id] || null : null,
       finalVote: this.fv ? this.fv.votes[p.id] || null : null,
-      learned: rd && rd.learned && rd.learned[p.id] ? rd.learned[p.id] : []
+      learned: rd && rd.learned && rd.learned[p.id] ? rd.learned[p.id] : [],
+      bet: rd && rd.bets ? rd.bets[p.id] || null : null,
+      sabLeft: rd && rd.sab ? D.SABOTAGE_MAX - (rd.sab[p.id] || 0) : D.SABOTAGE_MAX,
+      twistIn: rd && rd.twistIn ? rd.twistIn[p.id] : undefined,
+      bid: rd && rd.auction ? rd.auction.bids[p.id] : undefined,
+      selfie: !!(rd && rd.selfies && rd.selfies[p.id]),
+      roleChanged: !!(p.roleChanged && p.roleChanged > this.round),
+      stats: p.stats || null
     };
   }
 }
+
+require('./features')(Game);
 
 module.exports = Game;
