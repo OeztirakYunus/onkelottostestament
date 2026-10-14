@@ -77,7 +77,7 @@ Noter her tur rastgele bir madde çeker. Son turda her zaman „Son madde“ (10
 | 67 | Räume | Die Alarmanlage ist faul: Sie geht erst ab 4 Personen los. Bis dahin wird um den Tresor gestritten. | Odalar | Alarm tembel: Ancak 4 kişiden itibaren çalıyor. O zamana kadar kasa için kavga edilir. |
 | 68 | Räume | Geisterstunde: Geister spuken diese Runde doppelt so stark. | Odalar | Hayaletler saati: Hayaletler bu tur iki kat güçlü musallat oluyor. |
 | 69 | Duelle | Waffenstillstand: Keine Duelle. Im Tresor wird geteilt, im Schlafzimmer entscheidet das Los. | Düellolar | Ateşkes: Düello yok. Kasada paylaşılıyor, yatak odasında kura belirliyor. |
-| 70 | Räume | Klatsch und Tratsch: In der Bibliothek erfährst du heute zwei Rollen. | Odalar | Dedikodu: Bugün kütüphanede iki rol öğreniyorsun. |
+| 70 | Räume | Klatsch und Tratsch: In der Bibliothek findest du heute zwei Spuren. | Odalar | Dedikodu: Bugün kütüphanede iki ipucu buluyorsun. |
 | 71 | Karten | Erpresser-Saison: Erpressung bringt doppelt so viel. | Kartlar | Şantaj mevsimi: Şantaj iki kat getiriyor. |
 | 72 | Karten | Der Gartenzaun ist kaputt: Der Garten schützt diese Runde nicht vor Karten. | Kartlar | Bahçe çiti kırık: Bahçe bu tur kartlara karşı korumuyor. |
 | 73 | Karten | Kartenchaos: Diese Runde darf jeder bis zu drei Karten spielen! | Kartlar | Kart kaosu: Bu tur herkes üç karta kadar oynayabilir! |

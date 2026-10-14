@@ -89,7 +89,7 @@ class Game {
   active(p) { return p.isBot || p.connected; }
 
   resetPlayer(p) {
-    Object.assign(p, { money: 0, hand: [], heirlooms: [], role: 'relative', ghost: false, known: {}, catLives: 0, family: null, lastDelta: 0, prank: null,
+    Object.assign(p, { money: 0, hand: [], heirlooms: [], role: 'relative', ghost: false, known: {}, notes: [], catLives: 0, family: null, lastDelta: 0, prank: null,
       stats: { robbed: 0, chat: 0, cellar: 0, banana: 0, duelWin: 0, sabThrown: 0, sabGot: 0, betProfit: 0, broken: 0, cards: 0, ghostRounds: 0, auctionSpent: 0 } });
   }
 
@@ -663,8 +663,8 @@ class Game {
     of('paparazzi').forEach(c => {
       if (shield(c, c.target)) return;
       const me = this.get(c.from), t = this.get(c.target);
-      me.known[t.id] = t.role;
-      (rd.learned[me.id] = rd.learned[me.id] || []).push({ pid: t.id, role: t.role, src: 'photo' });
+      // Das Foto verrät nur, OB jemand ein Geheimnis hat – nicht welches
+      this.addClue(me, 'photo', t.role === 'relative' ? 'clue.photoPlain' : 'clue.photoSecret', { a: t.name });
       ev.push({ k: 'rv.paparazzi', card: 'paparazzi', from: c.from, to: c.target });
     });
     of('sleep').forEach(c => {
@@ -859,12 +859,26 @@ class Game {
   }
 
   /* ---------------- Abrechnung ---------------- */
+  // Spuren statt Gewissheit: Bibliothek und Wahrsagerin liefern nur Hinweise auf Butler und Kind
+  addClue(p, src, k, params) {
+    const c = { src, k, p: params || {}, round: this.round };
+    p.notes.push(c);
+    if (p.notes.length > 30) p.notes.shift();
+    if (this.rd) (this.rd.learned[p.id] = this.rd.learned[p.id] || []).push(c);
+  }
   learnRole(p, src) {
-    const unknown = this.players.filter(q => q !== p && !(q.id in p.known));
-    if (!unknown.length) return;
-    const q = pick(unknown);
-    p.known[q.id] = q.role;
-    (this.rd.learned[p.id] = this.rd.learned[p.id] || []).push({ pid: q.id, role: q.role, src });
+    const roles = ['butler', 'kid'].filter(r => r !== p.role && this.players.some(q => q.role === r));
+    if (!roles.length) return this.addClue(p, src, 'clue.none');
+    const rk = pick(roles);
+    const real = this.players.find(q => q.role === rk);
+    const others = shuffle(this.players.filter(q => q !== p && q !== real));
+    const kind = src === 'seer' ? 'pair' : (Math.random() < 0.5 ? 'trio' : 'not');
+    if (kind === 'not' && others.length) return this.addClue(p, src, 'clue.not', { rk: rk + '.lc', a: others[0].name });
+    const n = kind === 'pair' ? 1 : 2;
+    const names = shuffle([real, ...others.slice(0, n)]).map(q => q.name);
+    if (names.length === 1) return this.addClue(p, src, 'clue.none');
+    if (names.length === 2) return this.addClue(p, src, 'clue.pair', { rk: rk + '.the', a: names[0], b: names[1] });
+    this.addClue(p, src, 'clue.trio', { rk: rk + '.the', a: names[0], b: names[1], c: names[2] });
   }
   drawHeirloom(kind) {
     if (!kind) return this.heirloomDeck.shift();
@@ -1224,6 +1238,7 @@ class Game {
       vote: rd && rd.votes ? rd.votes[p.id] || null : null,
       finalVote: this.fv ? this.fv.votes[p.id] || null : null,
       learned: rd && rd.learned && rd.learned[p.id] ? rd.learned[p.id] : [],
+      notes: p.notes || [],
       bet: rd && rd.bets ? rd.bets[p.id] || null : null,
       sabLeft: rd && rd.sab ? D.SABOTAGE_MAX - (rd.sab[p.id] || 0) : D.SABOTAGE_MAX,
       twistIn: rd && rd.twistIn ? rd.twistIn[p.id] : undefined,

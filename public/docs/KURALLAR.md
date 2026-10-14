@@ -91,7 +91,7 @@ Her oda ödemesini yapar (aşağıdaki tabloya bakın). Ardından dağılıma ba
 |---|---|
 | 💰 **Kasa Odası** | Tek başına: **+150**. İki kişi: düello, kazanan +150, kaybeden +40. 3 kişiden itibaren: **ALARM**, herkes −50. |
 | 🍳 **Mutfak** | Herkes **bir kart** çeker (el sınırı 4, en eski kart düşer). |
-| 📚 **Kütüphane** | **+40** ve gizlice rastgele başka bir oyuncunun **rolünü** öğrenirsin. |
+| 📚 **Kütüphane** | **+40** ve uşak ya da çocuk hakkında gizli bir **ipucu** (bkz. „İpucu toplamak“). |
 | 🛏️ **Yatak Odası** | Gizli değerli bir **miras eşyası**. Birden fazla kişi: düello, sadece kazanan alır. |
 | 🕳️ **Bodrum** | Herkes için ayrı kumar: %45 **+180**, %35 **−90**, %20 sadece fareler. |
 | 🌳 **Bahçe** | **+20**. Bahçedeki kişi, kendisini hedef alan tüm kartlara (Muz Kabuğu, Yem, Yankesici, Hediye) ve şantaja karşı **bağışıktır**. Elektrik kesintisi yine de etkiler. |
@@ -121,7 +121,7 @@ Her oda ödemesini yapar (aşağıdaki tabloya bakın). Ardından dağılıma ba
 | 🔔 **Yemek Zili** | **Diğer herkes** mutfağa koşar (mutfak kapalıysa bahçeye). Sadece sen yerinde kalırsın. |
 | 🕯️ **Lanet** | Seçilen odadaki herkes **40** kaybeder. Oradaysan sen de! |
 | 🎺 **Parti Düdüğü** | Odandaki diğer her mirasçı için **+25**. |
-| 📸 **Paparazzi** | Hedefinin **rolünü** gizlice öğrenirsin. |
+| 📸 **Paparazzi** | Hedefinin gizli bir rolü **olup olmadığını** öğrenirsin – ama hangisi olduğunu değil. |
 | 🐍 **Kart Hırsızı** | Hedefinden rastgele bir kart çal. |
 | 🍷 **Şarap Tadımı** | Hedefin çakırkeyif olur ve **bu tur her düelloyu kaybeder**. |
 | 💨 **Koku Bombası** | Seçilen odadaki herkes rastgele başka odalara kaçar. |
@@ -137,10 +137,21 @@ Başlangıçta herkes telefonunda gizlice bir rol alır. Kimse başkasının tel
 | 👶 **Gayrimeşru Çocuk** | 4 oyuncu | Sonunda **yakalanmazsan** servetine **%50** bonus alırsın. |
 | 🤵 **Uşak** | 5 oyuncu | Sonunda **yakalanmazsan** diğer herkesin servetinin **%15**'ini çalarsın. |
 | 🐈‍⬛ **Otto'nun Kedisi** | 6 oyuncu | **9 can:** Sana karşı oynanan ilk **3 kart** seker. Sonunda **en fakir** sen olursan **+400** mama parası alırsın. |
-| 🔮 **Falcı** | 7 oyuncu | Kristal küren sana **her tur gizlice başka birinin rolünü** gösterir. Finalde her doğru tahminin +80 yerine **+200** getirir. |
+| 🔮 **Falcı** | 7 oyuncu | Kristal küren **her tur** fısıldar: Uşak ya da çocuk **iki kişiden biridir**. Finalde her doğru tahminin +80 yerine **+200** getirir. |
 | 🤡 **Aile Soytarısı** | 8 oyuncu | Bir **oylamada** seçilirsen her **ceza bonusa** dönüşür (her bonus da iki katına çıkar). Finalde aile seni çoğunlukla **uşak** ya da **çocuk** sanırsa her biri için **+250** kazanırsın. Yani: şüpheli davran! |
 
 Rollerle ilgili ipuçları **kütüphanede**, **falcıda**, „Noter fısıldıyor“, „Babalık testi“ ya da „Miyav?“ gibi maddelerde ve kartlar birinin üzerinden „sektiğinde“ ortaya çıkar.
+
+### İpucu toplamak
+
+Kimse bir rolü doğrudan öğrenmez. Sadece **ipuçları** vardır ve bir dedektif gibi birleştirilmeleri gerekir:
+
+- **Kütüphane:** ya „Uşak şu üç kişiden biri: A, B ya da C“ ya da „A kesinlikle gayrimeşru çocuk değil“.
+- **Falcı:** her tur „Çocuk ya A ya da B“.
+- **Paparazzi:** sadece „A'nın gizli bir rolü var“ ya da „A zararsız“, ama hangi rol olduğu değil.
+- **Rol değişimi (sürpriz):** Sonrasında eski ipuçları yanlış olabilir.
+
+Tüm ipuçları tur numarasıyla telefondaki dosyada 📂 durur. İpuçları her zaman doğrudur, ama ancak birkaçı bir araya gelince kimin kim olduğu anlaşılır. Onları paylaşmak, satmak (anlaşma!) ya da kendine saklamak senin elinde.
 
 ## Miras eşyaları
 
@@ -310,7 +321,7 @@ Botların adları örneğin **Ayşe Teyze**, **Mehmet Amca** ya da **Hüseyin De
 - **Yem artı düello:** Yavaş dokunan birini yatak odana çek.
 - **Yalan serbest.** „Bodruma gidiyorum“ hiçbir şey ifade etmez.
 - **Bahçe güvenli ama sıkıcı.** Çok paran varsa ve hırsızlardan korkuyorsan ideal.
-- **Kütüphane finali kazandırır.** Rolleri bilen doğru tahmin eder ve uşakla çocuğu durdurur.
+- **Kütüphane finali kazandırır.** Çok ipucu toplayıp birleştiren doğru tahmin eder ve uşakla çocuğu durdurur.
 - **Kedi olarak:** Fakir görün. Bilerek kaybet ve sonunda 400'ü cebe at.
 - **Uşak olarak:** Göze batma. Çok yüksek sesle suçlayan şüphe çeker.
 - **Soytarı olarak:** Gürültücü, şüpheli ve utandırıcı ol. Ne kadar çok seçilirsen o kadar iyi.

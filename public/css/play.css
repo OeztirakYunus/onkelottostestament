@@ -430,3 +430,5 @@ body.sab-flip #view { transform: rotate(180deg); transition: transform .5s var(-
 .aw-e { font-size: 2.2rem; filter: drop-shadow(0 0 10px rgba(243, 207, 122, .5)); }
 .award-row small { display: block; color: var(--text-dim); }
 .prank-note { font-size: 1rem; }
+
+.secret.clue small { display: block; font-size: .8rem; font-weight: 600; opacity: .7; margin-bottom: .3rem; }

@@ -670,7 +670,7 @@
   function openDossier() {
     if (!ME || !S || S.phase === 'lobby') return;
     const r = ME.role || 'relative';
-    const known = Object.entries(ME.known || {});
+    const notes = [...(ME.notes || [])].reverse();
     const fam = ME.family != null && S.families ? S.families.find(f => f.id === ME.family) : null;
     openSheet(`<div class="dossier">
       <h3>📂 ${esc(t('p.dossier'))}</h3>
@@ -678,7 +678,7 @@
         ${ME.catLives != null ? `<small>🐾 ${esc(t('p.catLives', { n: ME.catLives }))}</small>` : ''}</div></div>
       ${fam ? `<h4>${esc(t('p.family'))}: ${esc(famLabel(fam.id))}</h4>${fam.members.map(id => { const p = P(id); return p ? `<div class="row">${medal(p, 'tiny')}<div><b>${esc(p.name)}</b></div></div>` : ''; }).join('')}` : ''}
       <h4>${esc(t('p.known'))}</h4>
-      ${known.length ? known.map(([pid, role]) => { const p = P(pid); return p ? `<div class="row">${medal(p, 'tiny')}<div><b>${esc(p.name)}</b><small>${D.ROLES[role].emoji} ${esc(t('role.' + role))}</small></div></div>` : ''; }).join('') : `<p>${esc(t('p.nothingKnown'))}</p>`}
+      ${notes.length ? notes.map(c => `<div class="row"><span class="e">${CLUE_ICON[c.src] || '🕵️'}</span><div><b>${esc(t(c.k, c.p))}</b><small>${esc(t('p.clueRound', { n: c.round }))} · ${esc(t('clue.src.' + c.src))}</small></div></div>`).join('') : `<p>${esc(t('p.nothingKnown'))}</p>`}
       <h4>${esc(t('p.heirlooms'))}</h4>
       ${ME.heirlooms.length ? ME.heirlooms.map(h => `<div class="row"><span class="e">${D.HEIRLOOM_BY_ID[h].emoji}</span><div><b>${esc(t('h.' + h))}</b><small>${esc(t('p.valueHidden'))}</small></div></div>`).join('') : `<p>${esc(t('p.noHeirlooms'))}</p>`}
       <h4>${esc(t('p.cards'))}</h4>
@@ -1073,14 +1073,14 @@
     const mine = [];
     (pd.rooms || []).forEach(r => r.lines.forEach(l => { if (l.pid === ME.id || (l.p && (l.p.a === ME.name || l.p.b === ME.name))) mine.push({ ...l, room: r.room }); }));
     (pd.extra || []).forEach(l => { if (l.pid === ME.id) mine.push(l); });
-    const learned = (ME.learned || []).filter(l => P(l.pid));
+    const learned = (ME.learned || []).filter(l => l.k);
     const becameGhost = (pd.newGhosts || []).includes(ME.id);
     const revived = (pd.revived || []).includes(ME.id);
     view.innerHTML = `
       <div class="h2 center">${esc(t('p.roundResult'))}</div>
       <div class="delta-big ${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${signed(d)}</div>
       <div class="lines">${mine.map((l, i) => `<div class="${l.a > 0 ? 'pos' : l.a < 0 ? 'neg' : ''}" style="animation-delay:${i * 120}ms">${l.room ? D.ROOMS[l.room].emoji + ' ' : ''}${esc(t(l.k, l.p))}</div>`).join('')}</div>
-      ${learned.map(l => { const k = l.src === 'seer' ? ['🔮 ', 'p.seerLearned'] : l.src === 'photo' ? ['📸 ', 'p.photoLearned'] : ['🕵️ ', 'p.learned']; return `<div class="secret parchment">${k[0]}${esc(t(k[1], { a: P(l.pid).name, r: t('role.' + l.role) }))}</div>`; }).join('')}
+      ${learned.map(l => `<div class="secret parchment clue"><small>${CLUE_ICON[l.src] || '🕵️'} ${esc(t('clue.src.' + l.src))}</small>${esc(t(l.k, l.p))}</div>`).join('')}
       ${becameGhost ? `<div class="secret parchment">👻 ${esc(t('p.youAreGhost'))}<br><small>${esc(t('p.ghostInfo'))}</small></div>` : ''}
       ${revived ? `<div class="secret parchment">✨ ${esc(t('g.revived', { a: ME.name }))}</div>` : ''}
       <div class="look-tv">📺 ${esc(t('p.lookTV'))}</div>`;
@@ -1088,6 +1088,8 @@
     if (learned.length) { buzz([30, 30, 30, 30]); Sound.play('sparkle'); }
     if (becameGhost) Sound.play('ghost');
   }
+
+  const CLUE_ICON = { lib: '🕵️', seer: '🔮', photo: '📸', twist: '🎭' };
 
   /* ================= Abstimmung ================= */
   function vVote() {

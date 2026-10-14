@@ -28,6 +28,7 @@ D.AWARDS.forEach(a => needed.push('award.' + a.id, 'awardd.' + a.id));
 Object.keys(D.SABOTAGE).forEach(k => needed.push('sab.' + k));
 D.PROMISES.forEach(k => needed.push('promise.' + k));
 ['open', 'accepted', 'declined', 'cancelled', 'failed', 'broken'].forEach(k => needed.push('deal.' + k));
+['trio', 'pair', 'not', 'photoSecret', 'photoPlain', 'none', 'swapped', 'src.lib', 'src.seer', 'src.photo', 'src.twist'].forEach(k => needed.push('clue.' + k));
 if (Object.keys(D.TWISTS).length < 5) fail('Es müssen mindestens 5 Plot-Twists sein');
 ['de', 'tr'].forEach(l => needed.forEach(k => { if (!(k in I18N[l])) fail(`${l} fehlt: ${k}`); }));
 if (D.CLAUSES.length < 100) fail('Es müssen mindestens 100 Klauseln sein, sind ' + D.CLAUSES.length);
@@ -158,6 +159,8 @@ function runGame(n, rounds) {
     if (n % 3 === 0) g.forceTwists = true; // Plot-Twists häufiger testen
     g.onChange = () => {
       if (g.phase === 'twist') seen.add('twist:' + g.pd.type);
+      g.players.forEach(p => (p.notes || []).forEach(c => { usedKeys.add(c.k); if (c.k === 'clue.trio' || c.k === 'clue.pair') { const real = g.players.find(q => q.role === c.p.rk.split('.')[0]); if (real && !g.players.some(q => q.roleChanged) && ![c.p.a, c.p.b, c.p.c].includes(real.name)) fail('Falsche Spur: ' + JSON.stringify(c)); } if (c.k === 'clue.not') { const real = g.players.find(q => q.role === c.p.rk.split('.')[0]); if (real && real.name === c.p.a && !g.players.some(q => q.roleChanged)) fail('Falsche Nicht-Spur'); } }));
+      if (g.players.some(p => Object.keys(p.known || {}).length)) fail('Rolle wird direkt verraten');
       seen.add(g.phase);
       collectKeys(g.pd);
       if (g.clause) clauses.add(g.clause.id);

@@ -91,7 +91,7 @@ Bei Klauseln wie „Schweigeklausel“ oder „Alibi-Prüfung“ stimmen alle au
 |---|---|
 | 💰 **Tresorraum** | Allein: **+150**. Zu zweit: Duell, Sieger +150, Verlierer +40. Ab 3 Personen: **ALARM**, alle −50. |
 | 🍳 **Küche** | Jeder zieht **eine Karte** (Handlimit 4, die älteste fällt raus). |
-| 📚 **Bibliothek** | **+40** und du erfährst heimlich die **Rolle** eines zufälligen anderen Spielers. |
+| 📚 **Bibliothek** | **+40** und eine geheime **Spur** zu Butler oder Kind (siehe „Spuren sammeln“). |
 | 🛏️ **Schlafzimmer** | Ein **Erbstück** mit geheimem Wert. Mehrere Personen: Duell, nur der Sieger bekommt es. |
 | 🕳️ **Keller** | Glücksspiel für jeden einzeln: 45 % **+180**, 35 % **−90**, 20 % nur Ratten. |
 | 🌳 **Garten** | **+20**. Wer im Garten steht, ist **immun** gegen alle Karten, die auf ihn zielen (Bananenschale, Lockvogel, Taschendieb, Geschenk), und gegen Erpressung. Stromausfall wirkt trotzdem. |
@@ -121,7 +121,7 @@ Bei Klauseln wie „Schweigeklausel“ oder „Alibi-Prüfung“ stimmen alle au
 | 🔔 **Dinnerglocke** | **Alle anderen** rennen in die Küche (ist sie gesperrt, in den Garten). Nur du bleibst, wo du bist. |
 | 🕯️ **Fluch** | Jeder im gewählten Raum verliert **40**. Auch du, wenn du dort stehst! |
 | 🎺 **Partytröte** | **+25** für jeden anderen Erben in deinem Raum. |
-| 📸 **Paparazzi** | Du erfährst heimlich die **Rolle** deines Ziels. |
+| 📸 **Paparazzi** | Du erfährst heimlich, **ob** dein Ziel eine geheime Rolle hat – aber nicht welche. |
 | 🐍 **Kartenklau** | Stiehl deinem Ziel eine zufällige Karte. |
 | 🍷 **Weinprobe** | Dein Ziel ist beschwipst und **verliert diese Runde jedes Duell**. |
 | 💨 **Stinkbombe** | Alle im gewählten Raum flüchten in zufällige andere Räume. |
@@ -137,10 +137,21 @@ Zu Beginn bekommt jeder heimlich eine Rolle auf dem Handy. Niemand darf auf frem
 | 👶 **Uneheliches Kind** | 4 Spieler | Wirst du am Ende **nicht entlarvt**, bekommst du **+50 %** auf dein Vermögen. |
 | 🤵 **Butler** | 5 Spieler | Wirst du am Ende **nicht entlarvt**, stiehlst du **allen anderen 15 %** ihres Vermögens. |
 | 🐈‍⬛ **Ottos Katze** | 6 Spieler | **9 Leben:** Die ersten **3 Karten** gegen dich prallen ab. Bist du am Ende **am ärmsten**, bekommst du **+400** Futtergeld. |
-| 🔮 **Wahrsagerin** | 7 Spieler | Deine Kristallkugel zeigt dir **jede Runde heimlich eine fremde Rolle**. Beim Finale bringt dir jeder richtige Tipp **+200** statt +80. |
+| 🔮 **Wahrsagerin** | 7 Spieler | Deine Kristallkugel flüstert dir **jede Runde**: Butler oder Kind ist **eine von zwei Personen**. Beim Finale bringt dir jeder richtige Tipp **+200** statt +80. |
 | 🤡 **Familienclown** | 8 Spieler | Wirst du in einer **Abstimmung** gewählt, wird jede **Strafe zum Bonus** (und jeder Bonus verdoppelt). Hält dich die Familie beim Finale mehrheitlich für den **Butler** oder das **Kind**, kassierst du jeweils **+250**. Also: Benimm dich verdächtig! |
 
 Hinweise auf Rollen gibt es in der **Bibliothek**, bei der **Wahrsagerin**, durch Klauseln wie „Der Notar flüstert“, „Vaterschaftstest“ oder „Miau?“ und wenn Karten an jemandem „abprallen“.
+
+### Spuren sammeln
+
+Niemand erfährt eine Rolle direkt. Es gibt nur **Spuren**, und man muss sie kombinieren wie ein Detektiv:
+
+- **Bibliothek:** entweder „Der Butler ist einer von diesen dreien: A, B oder C“ oder „A ist ganz sicher nicht das uneheliche Kind“.
+- **Wahrsagerin:** jede Runde „Das Kind ist entweder A oder B“.
+- **Paparazzi:** nur „A hat eine geheime Rolle“ oder „A ist harmlos“, aber nicht welche Rolle.
+- **Rollentausch (Plot-Twist):** Danach können alte Spuren falsch sein.
+
+Alle Spuren stehen mit Rundennummer im Dossier 📂 auf dem Handy. Die Spuren sind immer wahr, aber erst mehrere zusammen verraten, wer wer ist. Ob du sie teilst, verkaufst (Vertrag!) oder für dich behältst, ist deine Sache.
 
 ## Erbstücke
 
@@ -310,7 +321,7 @@ Bots heißen zum Beispiel **Ayşe Teyze**, **Mehmet Amca** oder **Hüseyin Dede*
 - **Lockvogel plus Duell:** Zieh einen schwachen Tipper in dein Schlafzimmer.
 - **Lügen ist erlaubt.** „Ich gehe in den Keller“ heißt gar nichts.
 - **Der Garten ist sicher, aber langweilig.** Gut, wenn du viel Geld hast und Diebe fürchtest.
-- **Die Bibliothek gewinnt das Finale.** Wer die Rollen kennt, tippt richtig und stoppt Butler und Kind.
+- **Die Bibliothek gewinnt das Finale.** Wer viele Spuren sammelt und kombiniert, tippt richtig und stoppt Butler und Kind.
 - **Als Katze:** Gib dich arm. Verliere absichtlich und kassiere am Ende 400.
 - **Als Butler:** Sei unauffällig. Wer zu laut verdächtigt, wird verdächtig.
 - **Als Clown:** Sei laut, verdächtig und peinlich. Je öfter du gewählt wirst, desto besser.

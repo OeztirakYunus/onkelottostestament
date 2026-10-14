@@ -380,6 +380,8 @@ module.exports = function install(Game) {
         a.role = rb; b.role = ra;
         [a, b].forEach(p => { p.catLives = p.role === 'cat' ? 3 : 0; p.roleChanged = this.round + 1; });
         L('tw.swapped');
+        // Alte Spuren können jetzt falsch sein
+        this.players.forEach(p => this.addClue(p, 'twist', 'clue.swapped'));
         break;
       }
       case 'vultures':
